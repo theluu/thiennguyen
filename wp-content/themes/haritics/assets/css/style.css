@@ -73,7 +73,7 @@ body {
   font-family: var(--font-primary);
   margin: auto;
   font-size: clamp(13px, 0.84vw, 16px);
-  position: fixed;
+  position: static;
 }
 
 a,
@@ -781,6 +781,50 @@ button {
   width: 100%;
   font-size: clamp(13px, 0.84vw, 16px);
   width: 95%;
+}
+.ul-search-form--advanced {
+  border-radius: 24px;
+  height: auto;
+  max-width: 920px;
+  padding: clamp(20px, 2.1vw, 40px);
+  background: rgba(22, 61, 48, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.ul-search-form-inner {
+  width: 100%;
+}
+.ul-search-form-heading {
+  margin-bottom: 20px;
+}
+.ul-search-form--advanced input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: var(--white);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.ul-search-form--advanced input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+.ul-search-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.ul-search-form-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--white);
+  background-color: var(--ul-primary);
+  border-radius: 999px;
+  padding: 14px 22px;
+  font-weight: 700;
+}
+.ul-search-form-actions button:hover {
+  background-color: var(--white);
+  color: var(--ul-primary);
 }
 .ul-search-form-right {
   display: flex;
@@ -2522,10 +2566,15 @@ button {
 .ul-team-member-img {
   position: relative;
   z-index: 1;
+  aspect-ratio: 308/320;
+  overflow: hidden;
 }
 .ul-team-member-img img {
+  display: block;
   width: 100%;
-  aspect-ratio: 308/320;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
 }
 .ul-team-member-img::before {
   content: "";
@@ -3180,7 +3229,7 @@ button {
   }
 }
 .ul-footer-top {
-  background: linear-gradient(0deg, var(--ul-black) 50%, rgba(0, 0, 0, 0) 0);
+  background-color: var(--ul-black);
 }
 .ul-footer-top-contact-infos {
   background-color: var(--ul-primary);
@@ -3253,6 +3302,7 @@ button {
   padding: clamp(50px, 4.2vw, 80px) 0 clamp(50px, 5.25vw, 100px);
   position: relative;
   background-color: var(--ul-black);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
 }
 .ul-footer-middle::before {
   content: "";
@@ -3286,7 +3336,7 @@ button {
 }
 .ul-footer-about-txt {
   font-size: clamp(13px, 0.84vw, 16px);
-  color: var(--ul-gray2);
+  color: var(--white);
 }
 .ul-footer-socials {
   display: flex;
@@ -3349,9 +3399,13 @@ button {
 .ul-footer-widget-links > * {
   display: inline-flex;
   align-items: center;
-  color: var(--ul-gray2);
+  color: var(--white);
   font-size: clamp(13px, 0.84vw, 16px);
   position: relative;
+}
+.ul-footer-widget-links a,
+.ul-footer-widget-links a:not([href]):not([class]) {
+  color: var(--white);
 }
 .ul-footer-widget-links > *::before {
   content: "\f104";
@@ -3366,6 +3420,11 @@ button {
   padding-right: 10px;
 }
 .ul-footer-widget-links > *:hover {
+  color: var(--ul-primary);
+}
+.ul-footer-widget-links > *:hover a,
+.ul-footer-widget-links a:hover,
+.ul-footer-widget-links a:not([href]):not([class]):hover {
   color: var(--ul-primary);
 }
 .ul-footer-post {
@@ -3461,6 +3520,10 @@ button {
 .ul-footer-bottom {
   padding: clamp(14px, 1.16vw, 22px) 0;
   background-color: var(--ul-primary);
+  color: var(--white);
+}
+.ul-footer-bottom .mb-0 {
+  color: var(--white);
 }
 .ul-footer-bottom-wrapper {
   display: flex;
@@ -3478,14 +3541,14 @@ button {
   color: var(--white);
 }
 .ul-footer-bottom .copyright-txt a:hover {
-  color: var(--ul-black);
+  color: var(--white);
 }
 .ul-footer-bottom a {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--white);
   font-size: clamp(13px, 0.84vw, 16px);
 }
 .ul-footer-bottom a:hover {
-  color: var(--ul-black);
+  color: var(--white);
 }
 .ul-footer-bottom-nav {
   display: flex;
@@ -4214,11 +4277,16 @@ button {
 }
 .ul-donation-details-img {
   margin-bottom: clamp(22px, 2.47vw, 47px);
+  aspect-ratio: 890/600;
+  overflow: hidden;
+  border-radius: 30px;
 }
 .ul-donation-details-img img {
-  border-radius: 30px;
+  display: block;
   width: 100%;
-  aspect-ratio: 890/600;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 .ul-donation-details-raised {
   font-weight: 700;
@@ -4435,6 +4503,14 @@ button {
   border-radius: clamp(15px, 1.58vw, 30px);
   overflow: hidden;
   margin-bottom: clamp(15px, 1.58vw, 30px);
+  aspect-ratio: 890/524;
+}
+.ul-event-details-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 .ul-event-details-infos {
   display: flex;

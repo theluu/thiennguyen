@@ -6,3 +6,94 @@ Description: Custom WordPress theme converted from the Haritics HTML template.
 Version: 1.0.0
 Text Domain: haritics
 */
+
+.ul-header-cta {
+    color: #ffffff;
+    font-weight: 600;
+    margin-right: 16px;
+}
+
+.ul-header-nav .current-menu-item > a,
+.ul-header-nav .current_page_item > a,
+.ul-header-nav .current-menu-ancestor > a,
+.ul-header-nav a:hover {
+    color: var(--ul-primary, #ff6b35);
+}
+
+.ul-header-nav .menu-item {
+    list-style: none;
+}
+
+.ul-footer-widget-links .menu-item {
+    list-style: none;
+    margin-bottom: 10px;
+}
+
+.ul-footer-widget-links .menu-item a,
+.haritics-footer-address {
+    display: block;
+}
+
+.haritics-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+.haritics-content p:last-child {
+    margin-bottom: 0;
+}
+
+.haritics-form-message {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.haritics-form-message.success {
+    background: #e8fff1;
+    color: #166534;
+}
+
+.haritics-form-message.error {
+    background: #fff1f2;
+    color: #b91c1c;
+}
+
+.ul-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.ul-pagination .page-numbers {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e9e9e9;
+    border-radius: 999px;
+    color: #101828;
+    display: inline-flex;
+    height: 42px;
+    justify-content: center;
+    min-width: 42px;
+    padding: 0 14px;
+}
+
+.ul-pagination .page-numbers.current {
+    background: #ff6b35;
+    border-color: #ff6b35;
+    color: #ffffff;
+}
+
+.ul-team-member-img img,
+.ul-project-img img,
+.ul-donation-img img,
+.ul-event-img img,
+.ul-team-details-img img,
+.ul-donation-details-img img,
+.ul-event-details-img img,
+.ul-project-details-img-slider img {
+    display: block;
+    width: 100%;
+}
