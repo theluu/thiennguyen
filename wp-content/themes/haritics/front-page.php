@@ -10,14 +10,18 @@ $hero_title = haritics_get_option('home_hero_title', __('Kết nối nguồn l�
 $hero_description = haritics_get_option('home_hero_description', __('Nền tảng giúp kết nối nhà tổ chức, mạnh thường quân và các nguồn lực xã hội để cùng tạo ra những dự án minh bạch, bền vững và phù hợp với nhu cầu thực tế tại địa phương.', 'haritics'));
 $hero_image = haritics_get_option('home_hero_image', haritics_theme_asset('assets/img/banner-img.png'));
 $hero_cta_text = haritics_get_option('home_primary_cta_text', __('Ủng hộ ngay', 'haritics'));
-$hero_cta_url = haritics_get_option('home_primary_cta_url', get_post_type_archive_link('donation') ?: haritics_route_url('donation'));
+$resource_projects_url = trailingslashit(get_post_type_archive_link('project') ?: haritics_route_url('project')) . '#du-an-dang-huy-dong';
+$hero_cta_url = haritics_get_option('home_primary_cta_url', $resource_projects_url);
 $stat_number = haritics_get_option('home_stat_number', '2M+');
 $stat_label = haritics_get_option('home_stat_label', __('Mạnh thường quân đang đồng hành', 'haritics'));
 $about_badge = haritics_get_option('home_about_badge', __('Về chúng tôi', 'haritics'));
 $about_title = haritics_get_option('home_about_title', __('Lan tỏa tinh thần sẻ chia để cộng đồng cùng phát triển', 'haritics'));
 $about_description = haritics_get_option('home_about_description', __('Thiện Nguyện hướng tới việc kết nối đúng người, đúng dự án và đúng nguồn lực. Chúng tôi mong muốn mỗi đóng góp đều được sử dụng hiệu quả, công khai và tạo ra giá trị lâu dài cho cộng đồng thụ hưởng.', 'haritics'));
 $about_image = haritics_get_option('home_about_image', haritics_theme_asset('assets/img/about-img.png'));
-$projects = haritics_get_home_posts('project', 4);
+$projects_calling = haritics_get_projects_by_status('Đang huy động', 8);
+$projects_featured = haritics_get_projects_by_status('Tiêu biểu', 8);
+$projects_implementing = haritics_get_projects_by_status('Đang triển khai', 8);
+$projects_upcoming = haritics_get_projects_by_status('Sắp triển khai', 8);
 $donations = haritics_get_home_posts('donation', 4);
 $team_members = haritics_get_home_posts('team', 4);
 $events = haritics_get_home_posts('event', 3);
@@ -51,6 +55,144 @@ $events = haritics_get_home_posts('event', 3);
         </div>
     </section>
 
+    <?php
+    // Project timeline sections - ordered by priority
+    $project_sections = [
+        [
+            'title' => __('Dự án đang huy động', 'haritics'),
+            'projects' => $projects_calling,
+            'badge' => __('Đang huy động', 'haritics'),
+            'type' => 'calling',
+        ],
+        [
+            'title' => __('Dự án tiêu biểu', 'haritics'),
+            'projects' => $projects_featured,
+            'badge' => __('Tiêu biểu', 'haritics'),
+            'type' => 'featured',
+        ],
+        [
+            'title' => __('Dự án đang triển khai', 'haritics'),
+            'projects' => $projects_implementing,
+            'badge' => __('Đang triển khai', 'haritics'),
+            'type' => 'implementing',
+        ],
+        [
+            'title' => __('Dự án đang sắp triển khai', 'haritics'),
+            'projects' => $projects_upcoming,
+            'badge' => __('Sắp triển khai', 'haritics'),
+            'type' => 'upcoming',
+        ],
+    ];
+
+    function haritics_render_project_card($project, $type) {
+        $target = haritics_get_meta($project->ID, '_target_amount', '0');
+        $raised = haritics_get_meta($project->ID, '_raised_amount', '0');
+        $progress = haritics_progress_percent($raised, $target);
+        $status = haritics_get_meta($project->ID, '_status', '');
+        $location = haritics_get_meta($project->ID, '_location', get_the_excerpt($project));
+        $leader_text = haritics_get_meta($project->ID, '_leader_text', '');
+        $leader_condition = haritics_get_meta($project->ID, '_leader_condition', '#');
+        $leader_apply = haritics_get_meta($project->ID, '_leader_apply', '#');
+        $volunteer_needed = haritics_get_meta($project->ID, '_volunteer_needed', '');
+        $volunteer_condition = haritics_get_meta($project->ID, '_volunteer_condition', '#');
+        $volunteer_apply = haritics_get_meta($project->ID, '_volunteer_apply', '#');
+        $resources_other = haritics_get_meta($project->ID, '_resources_other', '');
+        $resources_detail = haritics_get_meta($project->ID, '_resources_detail', '#');
+        $resources_donate = haritics_get_meta($project->ID, '_resources_donate', '#');
+        ?>
+        <article class="ul-project-card">
+            <div class="ul-project-card-img">
+                <?php echo get_the_post_thumbnail($project->ID, 'large', ['alt' => get_the_title($project)]); ?>
+                <?php if ($type === 'calling') : ?>
+                    <a href="<?php echo esc_url(get_permalink($project)); ?>" class="ul-btn-view-detail"><?php esc_html_e('Xem chi tiết', 'haritics'); ?></a>
+                <?php endif; ?>
+            </div>
+            <div class="ul-project-card-content">
+                <h3 class="ul-project-card-title"><a href="<?php echo esc_url(get_permalink($project)); ?>"><?php echo esc_html(get_the_title($project)); ?></a></h3>
+                <p class="ul-project-card-location"><?php echo esc_html($location); ?></p>
+
+                <!-- Progress Bar -->
+                <div class="ul-project-progress">
+                    <div class="ul-progress-container">
+                        <div class="ul-progressbar" data-ul-progress-value="<?php echo esc_attr((string) $progress); ?>">
+                            <div class="ul-progress-label"></div>
+                        </div>
+                    </div>
+                    <div class="ul-progress-info">
+                        <span class="ul-progress-percent"><?php echo esc_html($progress); ?>%</span>
+                        <span class="ul-progress-amount"><?php echo esc_html(haritics_format_money($raised)); ?> / <?php echo esc_html(haritics_format_money($target)); ?></span>
+                    </div>
+                </div>
+
+                <?php if ($type === 'calling') : ?>
+                    <!-- Lãnh đạo dự án -->
+                    <?php if (!empty($leader_text)) : ?>
+                    <div class="ul-project-meta">
+                        <span class="ul-meta-label"><?php esc_html_e('Lãnh đạo dự án:', 'haritics'); ?></span>
+                        <span class="ul-meta-value"><?php echo esc_html($leader_text); ?></span>
+                        <div class="ul-meta-buttons">
+                            <a href="<?php echo esc_url($leader_condition); ?>" class="ul-btn-condition"><?php esc_html_e('Xem điều kiện', 'haritics'); ?></a>
+                            <a href="<?php echo esc_url($leader_apply); ?>" class="ul-btn-apply"><?php esc_html_e('Ứng tuyển', 'haritics'); ?></a>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Nhân sự cần huy động -->
+                    <?php if (!empty($volunteer_needed)) : ?>
+                    <div class="ul-project-meta">
+                        <span class="ul-meta-label"><?php esc_html_e('Nhân sự cần huy động:', 'haritics'); ?></span>
+                        <span class="ul-meta-value"><?php echo esc_html($volunteer_needed); ?></span>
+                        <div class="ul-meta-buttons">
+                            <a href="<?php echo esc_url($volunteer_condition); ?>" class="ul-btn-condition"><?php esc_html_e('Xem điều kiện', 'haritics'); ?></a>
+                            <a href="<?php echo esc_url($volunteer_apply); ?>" class="ul-btn-apply"><?php esc_html_e('Ứng tuyển', 'haritics'); ?></a>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Các nguồn lực khác -->
+                    <?php if (!empty($resources_other)) : ?>
+                    <div class="ul-project-meta">
+                        <span class="ul-meta-label"><?php esc_html_e('Các nguồn lực khác:', 'haritics'); ?></span>
+                        <span class="ul-meta-value"><?php echo esc_html($resources_other); ?></span>
+                        <div class="ul-meta-buttons">
+                            <a href="<?php echo esc_url($resources_detail); ?>" class="ul-btn-condition"><?php esc_html_e('Xem chi tiết', 'haritics'); ?></a>
+                            <a href="<?php echo esc_url($resources_donate); ?>" class="ul-btn-apply"><?php esc_html_e('Muốn đóng góp', 'haritics'); ?></a>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                <?php endif; ?>
+
+                <a href="<?php echo esc_url(get_permalink($project)); ?>" class="ul-project-card-btn"><i class="flaticon-up-right-arrow"></i></a>
+            </div>
+        </article>
+        <?php
+    }
+
+    foreach ($project_sections as $section) :
+        if (empty($section['projects'])) {
+            continue;
+        }
+        ?>
+        <section class="ul-projects-timeline ul-section-spacing overflow-hidden">
+            <div class="ul-container">
+                <div class="ul-section-heading justify-content-between text-center">
+                    <div class="left">
+                        <h2 class="ul-section-title"><?php echo esc_html($section['title']); ?></h2>
+                    </div>
+                </div>
+                <div class="row ul-bs-row row-cols-xl-4 row-cols-lg-4 row-cols-md-2 row-cols-1 justify-content-center">
+                    <?php foreach ($section['projects'] as $index => $project) : ?>
+                        <div class="col">
+                            <?php haritics_render_project_card($project, $section['type']); ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </section>
+        <?php
+    endforeach;
+    ?>
+
     <section class="ul-about ul-section-spacing">
         <div class="ul-container">
             <div class="row row-cols-md-2 row-cols-1 align-items-center gy-4 ul-about-row">
@@ -65,7 +207,7 @@ $events = haritics_get_home_posts('event', 3);
                         <h2 class="ul-section-title"><?php echo esc_html($about_title); ?></h2>
                         <p class="ul-section-descr"><?php echo esc_html($about_description); ?></p>
                         <div class="ul-about-bottom">
-                            <a href="<?php echo esc_url(haritics_route_url('contact')); ?>" class="ul-btn"><i class="flaticon-fast-forward-double-right-arrows-symbol"></i> <?php esc_html_e('Liên hệ với chúng tôi', 'haritics'); ?></a>
+                            <a href="<?php echo esc_url($resource_projects_url); ?>" class="ul-btn"><i class="flaticon-fast-forward-double-right-arrows-symbol"></i> <?php esc_html_e('Liên hệ với chúng tôi', 'haritics'); ?></a>
                             <div class="ul-about-call">
                                 <div class="icon"><i class="flaticon-telephone-call"></i></div>
                                 <div class="txt">
@@ -80,66 +222,29 @@ $events = haritics_get_home_posts('event', 3);
         </div>
     </section>
 
-    <section class="ul-donations ul-section-spacing overflow-hidden">
-        <div class="ul-container">
-            <div class="ul-section-heading ul-donations-heading justify-content-between text-center">
-                <div class="left">
-                    <span class="ul-section-sub-title"><span class="txt"><?php esc_html_e('Dự án nổi bật', 'haritics'); ?></span></span>
-                    <h2 class="ul-section-title"><?php echo esc_html(haritics_get_option('home_projects_heading', __('Những dự án đang triển khai', 'haritics'))); ?></h2>
-                </div>
-            </div>
-            <div class="row ul-bs-row justify-content-center">
-                <?php foreach ($projects as $index => $project) : ?>
-                    <div class="col-lg-<?php echo $index % 2 === 0 ? '8' : '4'; ?> col-md-6 col-10 col-xxs-12">
-                        <article class="ul-project <?php echo $index % 2 === 0 ? '' : 'ul-project--sm'; ?>">
-                            <div class="ul-project-img">
-                                <?php echo get_the_post_thumbnail($project->ID, 'large', ['alt' => get_the_title($project)]); ?>
-                            </div>
-                            <div class="ul-project-txt">
-                                <div>
-                                    <h3 class="ul-project-title"><a href="<?php echo esc_url(get_permalink($project)); ?>"><?php echo esc_html(get_the_title($project)); ?></a></h3>
-                                    <p class="ul-project-descr"><?php echo esc_html(haritics_get_meta($project->ID, '_location', get_the_excerpt($project))); ?></p>
-                                </div>
-                                <a href="<?php echo esc_url(get_permalink($project)); ?>" class="ul-project-btn"><i class="flaticon-up-right-arrow"></i></a>
-                            </div>
-                        </article>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
-
     <section class="ul-section-spacing overflow-hidden">
         <div class="ul-container">
             <div class="ul-section-heading justify-content-center text-center">
                 <div>
-                    <span class="ul-section-sub-title"><?php esc_html_e('Đóng góp cộng đồng', 'haritics'); ?></span>
-                    <h2 class="ul-section-title"><?php echo esc_html(haritics_get_option('home_donations_heading', __('Những chương trình đang cần thêm nguồn lực cộng đồng', 'haritics'))); ?></h2>
+                    <h2 class="ul-section-title"><?php echo esc_html(haritics_get_option('home_donations_heading', __('Những mạnh thường quân đang đồng hành cùng cộng đồng', 'haritics'))); ?></h2>
                 </div>
             </div>
             <div class="row ul-bs-row row-cols-xl-4 row-cols-md-2 row-cols-1">
-                <?php foreach ($donations as $donation) : $progress = haritics_progress_percent(haritics_get_meta($donation->ID, '_raised_amount'), haritics_get_meta($donation->ID, '_target_amount')); ?>
+                <?php foreach ($donations as $donation) : ?>
                     <div class="col">
-                        <article class="ul-donation ul-donation--inner">
-                            <div class="ul-donation-img">
+                        <article class="ul-team-member haritics-donor-member">
+                            <div class="ul-team-member-img">
                                 <?php echo get_the_post_thumbnail($donation->ID, 'large', ['alt' => get_the_title($donation)]); ?>
-                                <span class="tag"><?php echo esc_html(haritics_get_meta($donation->ID, '_badge', __('Ủng hộ', 'haritics'))); ?></span>
                             </div>
-                            <div class="ul-donation-txt">
-                                <div class="ul-donation-progress">
-                                    <div class="donation-progress-container ul-progress-container">
-                                        <div class="donation-progressbar ul-progressbar" data-ul-progress-value="<?php echo esc_attr((string) $progress); ?>">
-                                            <div class="donation-progress-label ul-progress-label"></div>
-                                        </div>
-                                    </div>
-                                    <div class="ul-donation-progress-labels">
-                                        <span class="ul-donation-progress-label"><?php echo esc_html__('Đã huy động:', 'haritics') . ' ' . esc_html(haritics_format_money(haritics_get_meta($donation->ID, '_raised_amount'))); ?></span>
-                                        <span class="ul-donation-progress-label"><?php echo esc_html__('Mục tiêu:', 'haritics') . ' ' . esc_html(haritics_format_money(haritics_get_meta($donation->ID, '_target_amount'))); ?></span>
-                                    </div>
-                                </div>
-                                <a href="<?php echo esc_url(get_permalink($donation)); ?>" class="ul-donation-title"><?php echo esc_html(get_the_title($donation)); ?></a>
-                                <p class="ul-donation-descr"><?php echo esc_html(get_the_excerpt($donation)); ?></p>
-                                <a href="<?php echo esc_url(get_permalink($donation)); ?>" class="ul-donation-btn"><?php esc_html_e('Ủng hộ ngay', 'haritics'); ?> <i class="flaticon-up-right-arrow"></i></a>
+                            <div class="ul-team-member-info">
+                                <h3 class="ul-team-member-name"><a href="<?php echo esc_url(get_permalink($donation)); ?>"><?php echo esc_html(get_the_title($donation)); ?></a></h3>
+                                <p class="ul-team-member-designation"><?php echo esc_html(haritics_get_meta($donation->ID, '_donor_type', __('Mạnh thường quân', 'haritics'))); ?></p>
+                                <?php if (haritics_get_meta($donation->ID, '_contribution_type') !== '') : ?>
+                                    <p class="haritics-donor-location"><?php echo esc_html(haritics_get_meta($donation->ID, '_contribution_type')); ?></p>
+                                <?php endif; ?>
+                                <?php if (get_the_excerpt($donation) !== '') : ?>
+                                    <p class="haritics-donor-excerpt"><?php echo esc_html(get_the_excerpt($donation)); ?></p>
+                                <?php endif; ?>
                             </div>
                         </article>
                     </div>

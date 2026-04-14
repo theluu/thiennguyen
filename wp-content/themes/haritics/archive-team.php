@@ -6,7 +6,7 @@ if (! defined('ABSPATH')) {
 get_header();
 ?>
 <main>
-    <?php haritics_render_breadcrumb(__('Nhà tổ chức', 'haritics')); ?>
+    <?php haritics_render_breadcrumb(__('Đội ngũ', 'haritics')); ?>
     <section class="ul-team ul-inner-team ul-section-spacing">
         <div class="ul-container">
             <div class="row row-cols-md-4 row-cols-sm-3 row-cols-2 row-cols-xxs-1 ul-team-row justify-content-center">

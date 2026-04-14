@@ -7,6 +7,20 @@ Version: 1.0.0
 Text Domain: haritics
 */
 
+:root {
+    --ul-primary: #1f5fd6;
+    --ul-secondary: #f28c28;
+    --ul-c3: #dbe7ff;
+    --ul-c4: #f4f8ff;
+    --ul-c5: #184fb4;
+    --ul-black: #16326b;
+    --ul-p: #4d5f89;
+    --ul-gray: #6f7fa3;
+    --ul-gray2: #d7dff0;
+    --ul-gray3: #eef3ff;
+    --ul-gradient: linear-gradient(90deg, var(--ul-primary) 0%, var(--ul-secondary) 100%);
+}
+
 .ul-header-cta {
     color: #ffffff;
     font-weight: 600;
@@ -81,8 +95,8 @@ Text Domain: haritics
 }
 
 .ul-pagination .page-numbers.current {
-    background: #ff6b35;
-    border-color: #ff6b35;
+    background: var(--ul-primary);
+    border-color: var(--ul-primary);
     color: #ffffff;
 }
 
@@ -96,4 +110,247 @@ Text Domain: haritics
 .ul-project-details-img-slider img {
     display: block;
     width: 100%;
+}
+
+.haritics-archive-group + .haritics-archive-group {
+    margin-top: 60px;
+}
+
+.ul-projects-timeline.ul-section-spacing {
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+
+.ul-projects-timeline + .ul-projects-timeline {
+    padding-top: 10px;
+}
+
+.ul-projects-timeline .row > .col {
+    display: flex;
+}
+
+.ul-projects-timeline .ul-project-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.ul-projects-timeline .ul-project-card-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.ul-projects-timeline .ul-project-progress {
+    margin-bottom: 16px;
+}
+
+.ul-projects-timeline .ul-project-meta:last-of-type,
+.ul-projects-timeline .haritics-project-detail-block:last-of-type {
+    margin-bottom: 0;
+}
+
+.haritics-project-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(31, 95, 214, 0.12);
+    color: var(--ul-primary);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.haritics-project-meta-list {
+    margin-top: 14px;
+}
+
+.haritics-project-meta-list p {
+    margin-bottom: 8px;
+    color: var(--ul-p);
+}
+
+.haritics-project-meta-list p:last-child {
+    margin-bottom: 0;
+}
+
+.haritics-project-card-detailed {
+    height: 100%;
+}
+
+.haritics-project-detail-block {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(22, 50, 107, 0.12);
+}
+
+.haritics-project-detail-label,
+.haritics-project-detail-value {
+    display: block;
+}
+
+.haritics-project-detail-label {
+    margin-bottom: 6px;
+    color: var(--ul-black);
+    font-weight: 700;
+}
+
+.haritics-project-detail-value {
+    color: var(--ul-p);
+}
+
+.haritics-project-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.haritics-project-detail-actions a {
+    text-decoration: none;
+}
+
+.haritics-project-article {
+    background: #ffffff;
+    border: 1px solid rgba(22, 50, 107, 0.08);
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+.haritics-project-hero {
+    margin-bottom: 0;
+}
+
+.haritics-project-header,
+.haritics-project-section {
+    padding: 28px 32px;
+}
+
+.haritics-project-header {
+    border-bottom: 1px solid rgba(22, 50, 107, 0.08);
+}
+
+.haritics-project-section + .haritics-project-section {
+    border-top: 1px solid rgba(22, 50, 107, 0.08);
+}
+
+.haritics-project-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.haritics-project-section-head .ul-event-details-inner-title {
+    margin-bottom: 0;
+}
+
+.haritics-project-section-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.haritics-project-sidebar {
+    position: sticky;
+    top: 110px;
+}
+
+.haritics-project-sidebar-nav {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(22, 50, 107, 0.08);
+}
+
+.haritics-project-sidebar-nav h5 {
+    margin-bottom: 16px;
+    color: var(--ul-black);
+    font-size: 18px;
+}
+
+.haritics-project-sidebar-nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.haritics-project-sidebar-nav li + li {
+    margin-top: 10px;
+}
+
+.haritics-project-sidebar-nav a {
+    color: var(--ul-p);
+    text-decoration: none;
+}
+
+.haritics-project-sidebar-nav a:hover {
+    color: var(--ul-primary);
+}
+
+@media (max-width: 991px) {
+    .ul-projects-timeline.ul-section-spacing {
+        padding-top: 28px;
+        padding-bottom: 28px;
+    }
+
+    .ul-projects-timeline + .ul-projects-timeline {
+        padding-top: 0;
+    }
+
+    .haritics-project-header,
+    .haritics-project-section {
+        padding: 22px 20px;
+    }
+
+    .haritics-project-sidebar {
+        position: static;
+        top: auto;
+    }
+}
+
+.haritics-donor-member .ul-team-member-info {
+    min-height: 170px;
+}
+
+.haritics-donor-location,
+.haritics-donor-excerpt {
+    margin-bottom: 0;
+    color: var(--ul-p);
+}
+
+.haritics-donor-location {
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.haritics-donor-excerpt {
+    margin-top: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.haritics-donor-profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.haritics-donor-profile-item {
+    padding: 18px;
+    border-radius: 18px;
+    background: var(--ul-gray3);
+}
+
+@media (max-width: 767px) {
+    .haritics-donor-profile-grid {
+        grid-template-columns: 1fr;
+    }
 }

@@ -49,17 +49,21 @@ CSS INDEX
 :root {
   --black: #000;
   --white: #fff;
-  --ul-primary: #1fa463;
-  --ul-secondary: #67c587;
-  --ul-c3: #d8f4e3;
-  --ul-c4: #f3fbf6;
-  --ul-c5: #2bb673;
-  --ul-black: #163d30;
-  --ul-p: #48635a;
-  --ul-gray: #5c766d;
-  --ul-gray2: #c8ddd3;
-  --ul-gray3: #eef7f2;
+  --ul-primary: #FF5E15;
+  --ul-secondary: #16326b;
+  --ul-c3: #ffe0d1;
+  --ul-c4: #fff5ee;
+  --ul-c5: #ff7d4d;
+  --ul-black: #0a1525;
+  --ul-p: #2a3a4f;
+  --ul-gray: #4a5a6f;
+  --ul-gray2: #d0d8e3;
+  --ul-gray3: #e8edf5;
   --ul-gradient: linear-gradient(90deg, var(--ul-primary) 0%, var(--ul-secondary) 100%);
+  --ul-primary-color: #FF5E15;
+  --ul-primary-color-dark: #e54e0d;
+  --ul-secondary-color: #16326b;
+  --ul-secondary-color-dark: #0f2350;
   --font-primary: "Manrope", serif;
   --font-quicksand: "Quicksand", serif;
   --font-caveat: "Caveat", serif;
@@ -385,6 +389,25 @@ button {
   color: var(--ul-primary);
 }
 
+/* Secondary Button (Blue - Volunteer) */
+.ul-btn--secondary {
+  background-color: var(--ul-secondary, #16326b);
+  border: 1px solid transparent;
+}
+.ul-btn--secondary:hover {
+  color: var(--ul-secondary, #16326b);
+  background-color: transparent;
+  border-color: var(--ul-secondary, #16326b);
+}
+.ul-btn--secondary i {
+  background-color: var(--white);
+  color: var(--ul-secondary, #16326b);
+}
+.ul-btn--secondary:hover i {
+  background-color: var(--ul-secondary, #16326b);
+  color: var(--white);
+}
+
 .ul-section-heading {
   display: flex;
   align-items: center;
@@ -454,7 +477,7 @@ button {
   content: "";
   position: absolute;
   inset: 0;
-  background-color: rgba(22, 61, 48, 0.9);
+  background-color: rgba(22, 50, 107, 0.9);
   z-index: -1;
   pointer-events: none;
 }
@@ -787,7 +810,7 @@ button {
   height: auto;
   max-width: 920px;
   padding: clamp(20px, 2.1vw, 40px);
-  background: rgba(22, 61, 48, 0.88);
+  background: rgba(22, 50, 107, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .ul-search-form-inner {
@@ -826,6 +849,107 @@ button {
   background-color: var(--white);
   color: var(--ul-primary);
 }
+
+/* Search Filter Box for Archive Pages */
+.ul-search-filter-box {
+  background: #fff;
+  border-radius: clamp(15px, 1.58vw, 30px);
+  padding: clamp(20px, 2vw, 40px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+.ul-search-filter-box label {
+  font-weight: 600;
+  color: var(--ul-black);
+  font-size: 14px;
+}
+.ul-search-filter-box input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #E8E8E8;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+.ul-search-filter-box input:focus {
+  outline: none;
+  border-color: var(--ul-primary-color, #FF5E15);
+}
+.ul-search-filter-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: center;
+}
+.ul-search-filter-actions .ul-btn {
+  min-width: 140px;
+}
+.ul-search-filter-actions .ul-btn-secondary {
+  background: #E8E8E8;
+  color: #333;
+}
+.ul-search-filter-actions .ul-btn-secondary:hover {
+  background: #D9D9D9;
+  color: #333;
+}
+.ul-search-result-info {
+  text-align: center;
+  padding: 15px;
+  background: #F5F5F5;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.ul-search-result-info strong {
+  display: block;
+  color: var(--ul-primary-color, #FF5E15);
+  margin-top: 5px;
+}
+
+/* Team Member Card for Search Results */
+.ul-team-member-card {
+  display: flex;
+  gap: 20px;
+  background: #fff;
+  border-radius: clamp(15px, 1.58vw, 30px);
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  align-items: center;
+}
+.ul-team-member-card-img {
+  flex-shrink: 0;
+  width: 120px;
+}
+.ul-team-member-card-img img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.ul-team-member-card-info {
+  flex: 1;
+}
+.ul-team-member-card-name {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 5px 0;
+}
+.ul-team-member-card-name a {
+  color: var(--ul-black);
+  text-decoration: none;
+}
+.ul-team-member-card-name a:hover {
+  color: var(--ul-primary-color, #FF5E15);
+}
+.ul-team-member-card-role {
+  color: var(--ul-primary-color, #FF5E15);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.ul-team-member-card-descr {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
 .ul-search-form-right {
   display: flex;
   align-items: center;
@@ -1617,7 +1741,7 @@ button {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(180deg, #163d30 -5.34%, rgba(22, 61, 48, 0) 39.75%);
+  background: linear-gradient(180deg, #16326b -5.34%, rgba(22, 50, 107, 0) 39.75%);
 }
 .ul-banner-img-vectors > * {
   position: absolute;
@@ -2581,7 +2705,7 @@ button {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: linear-gradient(180deg, rgba(22, 61, 48, 0) 0%, rgba(22, 61, 48, 0.6) 100%);
+  background: linear-gradient(180deg, rgba(22, 50, 107, 0) 0%, rgba(22, 50, 107, 0.6) 100%);
   opacity: 0;
   transition: 0.3s ease;
 }
@@ -3180,7 +3304,7 @@ button {
   content: "";
   position: absolute;
   inset: 0;
-  background-color: rgba(22, 61, 48, 0.6);
+  background-color: rgba(22, 50, 107, 0.6);
   z-index: -2;
 }
 .ul-cta::before {
@@ -3854,6 +3978,166 @@ button {
   border-radius: 50%;
 }
 
+/* Project Card for Home Page Timeline */
+.ul-project-card {
+  background: #fff;
+  border-radius: clamp(15px, 1.58vw, 30px);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+}
+.ul-project-card-img {
+  position: relative;
+  overflow: hidden;
+}
+.ul-project-card-img img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.ul-project-card:hover .ul-project-card-img img {
+  transform: scale(1.05);
+}
+.ul-btn-view-detail {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: var(--ul-primary-color, #FF5E15);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+.ul-btn-view-detail:hover {
+  background: var(--ul-primary-color-dark, #e54e0d);
+  color: #fff;
+}
+.ul-project-card-content {
+  padding: 20px;
+  position: relative;
+}
+.ul-project-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.ul-project-card-title a {
+  color: var(--ul-black);
+  text-decoration: none;
+}
+.ul-project-card-title a:hover {
+  color: var(--ul-primary-color, #FF5E15);
+}
+.ul-project-card-location {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+/* Progress Bar */
+.ul-project-progress {
+  margin-bottom: 20px;
+}
+.ul-progress-container {
+  background: #E8E8E8;
+  border-radius: 10px;
+  height: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.ul-progressbar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ul-primary-color, #FF5E15) 0%, #FF8A50 100%);
+  border-radius: 10px;
+  width: 0;
+  transition: width 1s ease-out;
+}
+.ul-progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.ul-progress-percent {
+  font-weight: 700;
+  color: var(--ul-primary-color, #FF5E15);
+}
+.ul-progress-amount {
+  color: #666;
+}
+
+/* Project Meta Info */
+.ul-project-meta {
+  padding: 12px 0;
+  border-top: 1px solid #E8E8E8;
+}
+.ul-meta-label {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 4px;
+}
+.ul-meta-value {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ul-black);
+  margin-bottom: 8px;
+}
+.ul-meta-buttons {
+  display: flex;
+  gap: 10px;
+}
+.ul-btn-condition,
+.ul-btn-apply {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+.ul-btn-condition {
+  background: #E8E8E8;
+  color: #333;
+}
+.ul-btn-condition:hover {
+  background: #D9D9D9;
+  color: #333;
+}
+.ul-btn-apply {
+  background: var(--ul-primary-color, #FF5E15);
+  color: #fff;
+}
+.ul-btn-apply:hover {
+  background: var(--ul-primary-color-dark, #e54e0d);
+  color: #fff;
+}
+.ul-project-card-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: #D9D9D9;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+.ul-project-card-btn:hover {
+  background: var(--ul-primary-color, #FF5E15);
+  color: #fff;
+}
+
 .ul-contact {
   background-color: var(--ul-gray3);
 }
@@ -4372,7 +4656,7 @@ button {
   color: var(--ul-black);
   margin-bottom: clamp(5px, 0.42vw, 8px);
   letter-spacing: -0.04em;
-  border-bottom: 1px solid rgba(22, 61, 48, 0.3);
+  border-bottom: 1px solid rgba(22, 50, 107, 0.3);
   padding-bottom: clamp(15px, 1.31vw, 25px);
   margin-bottom: clamp(14px, 1.05vw, 20px);
 }

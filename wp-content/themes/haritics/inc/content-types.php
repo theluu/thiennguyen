@@ -40,7 +40,7 @@ function haritics_register_content_types(): void
     register_post_type('donation', [
         'labels' => [
             'name' => __('Mạnh thường quân', 'haritics'),
-            'singular_name' => __('Chương trình kêu gọi', 'haritics'),
+            'singular_name' => __('Mạnh thường quân', 'haritics'),
         ],
         'public' => true,
         'has_archive' => haritics_route_path('donation'),

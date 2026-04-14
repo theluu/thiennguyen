@@ -379,9 +379,157 @@ function haritics_get_home_posts(string $post_type, int $limit = 3): array
     ]);
 }
 
+function haritics_get_projects_by_status(string $status, int $limit = 4): array
+{
+    $status_aliases = [
+        'Đang huy động' => ['Đang huy động', 'Đang kêu gọi'],
+        'Đang kêu gọi' => ['Đang kêu gọi', 'Đang huy động'],
+        'Sắp triển khai' => ['Sắp triển khai', 'Đang sắp triển khai'],
+        'Đang sắp triển khai' => ['Đang sắp triển khai', 'Sắp triển khai'],
+    ];
+
+    return get_posts([
+        'post_type' => 'project',
+        'posts_per_page' => $limit,
+        'post_status' => 'publish',
+        'meta_query' => [
+            [
+                'key' => '_status',
+                'value' => $status_aliases[$status] ?? [$status],
+                'compare' => 'IN',
+            ],
+        ],
+    ]);
+}
+
+function haritics_get_project_status_groups(): array
+{
+    return [
+        [
+            'key' => 'calling',
+            'title' => __('Dự án đang huy động', 'haritics'),
+            'badge' => __('Đang huy động', 'haritics'),
+            'statuses' => ['Đang huy động', 'Đang kêu gọi'],
+        ],
+        [
+            'key' => 'featured',
+            'title' => __('Dự án tiêu biểu', 'haritics'),
+            'badge' => __('Tiêu biểu', 'haritics'),
+            'statuses' => ['Tiêu biểu'],
+        ],
+        [
+            'key' => 'implementing',
+            'title' => __('Dự án đang triển khai', 'haritics'),
+            'badge' => __('Đang triển khai', 'haritics'),
+            'statuses' => ['Đang triển khai'],
+        ],
+        [
+            'key' => 'upcoming',
+            'title' => __('Dự án đang sắp triển khai', 'haritics'),
+            'badge' => __('Sắp triển khai', 'haritics'),
+            'statuses' => ['Đang sắp triển khai', 'Sắp triển khai'],
+        ],
+    ];
+}
+
+function haritics_build_project_filter_meta_query(array $filters): array
+{
+    $meta_query = ['relation' => 'AND'];
+
+    if (! empty($filters['organizer'])) {
+        $meta_query[] = [
+            'key' => '_leader_text',
+            'value' => $filters['organizer'],
+            'compare' => 'LIKE',
+        ];
+    }
+
+    if (! empty($filters['donor'])) {
+        $meta_query[] = [
+            'key' => '_donor_text',
+            'value' => $filters['donor'],
+            'compare' => 'LIKE',
+        ];
+    }
+
+    if (! empty($filters['location'])) {
+        $meta_query[] = [
+            'key' => '_location',
+            'value' => $filters['location'],
+            'compare' => 'LIKE',
+        ];
+    }
+
+    return count($meta_query) > 1 ? $meta_query : [];
+}
+
+function haritics_get_projects_for_archive(array $group, array $filters = []): array
+{
+    $query_args = [
+        'post_type' => 'project',
+        'posts_per_page' => -1,
+        'post_status' => 'publish',
+        'orderby' => 'date',
+        'order' => 'DESC',
+        'meta_query' => [
+            'relation' => 'AND',
+            [
+                'key' => '_status',
+                'value' => $group['statuses'] ?? [],
+                'compare' => 'IN',
+            ],
+        ],
+    ];
+
+    if (! empty($filters['s'])) {
+        $query_args['s'] = $filters['s'];
+    }
+
+    $filter_meta_query = haritics_build_project_filter_meta_query($filters);
+    if ($filter_meta_query !== []) {
+        foreach (array_slice($filter_meta_query, 1) as $meta_clause) {
+            $query_args['meta_query'][] = $meta_clause;
+        }
+    }
+
+    return get_posts($query_args);
+}
+
 function haritics_apply_advanced_search(\WP_Query $query): void
 {
-    if (is_admin() || ! $query->is_main_query() || ! haritics_has_active_search_filters()) {
+    if (is_admin() || ! $query->is_main_query()) {
+        return;
+    }
+
+    $has_filters = haritics_has_active_search_filters();
+    $archive_post_type = $query->is_post_type_archive() ? (string) $query->get('post_type') : '';
+
+    if (! $has_filters && $archive_post_type === '') {
+        return;
+    }
+
+    $filters = haritics_get_search_filters();
+    $keyword = haritics_get_search_keyword();
+
+    if ($archive_post_type !== '') {
+        $query->set('post_type', $archive_post_type);
+        $query->set('posts_per_page', $archive_post_type === 'project' ? -1 : 12);
+
+        if ($archive_post_type === 'project' && $has_filters) {
+            if ($keyword !== '') {
+                $query->set('s', $keyword);
+            }
+
+            $meta_query = haritics_build_project_filter_meta_query($filters);
+            if ($meta_query !== []) {
+                $query->set('meta_query', $meta_query);
+            }
+        }
+
+        return;
+    }
+
+    if (! $has_filters) {
         return;
     }
 
@@ -392,17 +540,43 @@ function haritics_apply_advanced_search(\WP_Query $query): void
         $query->is_singular = false;
     }
 
-    $filters = haritics_get_search_filters();
-    $keyword = haritics_get_search_keyword();
+    $post_types = [];
+    $has_organizer = $filters['organizer'] !== '';
+    $has_donor = $filters['donor'] !== '';
+    $has_location = $filters['location'] !== '';
+    $has_keyword = $keyword !== '';
 
-    $query->set('post_type', ['project', 'team', 'donation', 'event']);
+    $post_types[] = 'project';
+
+    if ($has_organizer) {
+        $post_types[] = 'team';
+    }
+
+    if ($has_donor) {
+        $post_types[] = 'donation';
+    }
+
+    if ($has_location) {
+        $post_types[] = 'donation';
+        $post_types[] = 'event';
+    }
+
+    $post_types = array_unique($post_types);
+
+    if (! empty($post_types)) {
+        $query->set('post_type', $post_types);
+    }
+
     $query->set('posts_per_page', 12);
-    $query->set('s', $keyword);
 
-    $meta_query = ['relation' => 'AND'];
+    if ($keyword !== '') {
+        $query->set('s', $keyword);
+    }
+
+    $meta_queries = [];
 
     if ($filters['organizer'] !== '') {
-        $meta_query[] = [
+        $meta_queries[] = [
             'relation' => 'OR',
             [
                 'key' => '_leader_text',
@@ -423,7 +597,7 @@ function haritics_apply_advanced_search(\WP_Query $query): void
     }
 
     if ($filters['donor'] !== '') {
-        $meta_query[] = [
+        $meta_queries[] = [
             'relation' => 'OR',
             [
                 'key' => '_donor_text',
@@ -439,7 +613,7 @@ function haritics_apply_advanced_search(\WP_Query $query): void
     }
 
     if ($filters['location'] !== '') {
-        $meta_query[] = [
+        $meta_queries[] = [
             'relation' => 'OR',
             [
                 'key' => '_location',
@@ -454,10 +628,20 @@ function haritics_apply_advanced_search(\WP_Query $query): void
         ];
     }
 
-    if (count($meta_query) > 1) {
-        $query->set('meta_query', $meta_query);
+    if (! empty($meta_queries)) {
+        if (count($meta_queries) > 1) {
+            $meta_query = ['relation' => 'AND'];
+            foreach ($meta_queries as $mq) {
+                $meta_query[] = $mq;
+            }
+            $query->set('meta_query', $meta_query);
+        } else {
+            $query->set('meta_query', $meta_queries[0]);
+        }
     }
 
-    $query->is_search = true;
+    if ($has_filters) {
+        $query->is_search = true;
+    }
 }
 add_action('pre_get_posts', 'haritics_apply_advanced_search');

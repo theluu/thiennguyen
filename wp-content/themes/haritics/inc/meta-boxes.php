@@ -37,18 +37,63 @@ function haritics_meta_fields(): array
             '_end_date' => ['label' => 'Ngày kết thúc', 'type' => 'date'],
             '_status' => ['label' => 'Trạng thái', 'type' => 'text'],
             '_leader_text' => ['label' => 'Lãnh đạo dự án', 'type' => 'text'],
+            '_leader_condition' => ['label' => 'Link xem điều kiện lãnh đạo', 'type' => 'url'],
+            '_leader_apply' => ['label' => 'Link ứng tuyển lãnh đạo', 'type' => 'url'],
+            '_volunteer_needed' => ['label' => 'Nhân sự cần huy động', 'type' => 'text'],
+            '_volunteer_condition' => ['label' => 'Link xem điều kiện tình nguyện', 'type' => 'url'],
+            '_volunteer_apply' => ['label' => 'Link ứng tuyển tình nguyện', 'type' => 'url'],
+            '_resources_other' => ['label' => 'Các nguồn lực khác', 'type' => 'textarea'],
+            '_resources_detail' => ['label' => 'Link xem chi tiết nguồn lực', 'type' => 'url'],
+            '_resources_donate' => ['label' => 'Link muốn đóng góp', 'type' => 'url'],
             '_donor_text' => ['label' => 'Nhà hảo tâm', 'type' => 'text'],
+            '_leader_list_url' => ['label' => 'Link xem danh sách lãnh đạo', 'type' => 'url'],
+            '_donor_list_url' => ['label' => 'Link xem danh sách nhà hảo tâm', 'type' => 'url'],
+            '_accounting_public_url' => ['label' => 'Link bài viết quyết toán công khai', 'type' => 'url'],
+            '_related_issues' => ['label' => 'Các vấn đề liên quan khác', 'type' => 'textarea'],
             '_gallery_urls' => ['label' => 'Gallery URLs (mỗi dòng một ảnh)', 'type' => 'textarea'],
         ],
         'donation' => [
-            '_badge' => ['label' => 'Nhãn / tag', 'type' => 'text'],
-            '_target_amount' => ['label' => 'Mục tiêu gây quỹ', 'type' => 'number'],
-            '_raised_amount' => ['label' => 'Đã gây quỹ', 'type' => 'number'],
-            '_deadline' => ['label' => 'Hạn đóng góp', 'type' => 'date'],
-            '_short_stats' => ['label' => 'Thông tin ngắn', 'type' => 'textarea'],
-            '_location' => ['label' => 'Địa điểm', 'type' => 'text'],
+            '_donor_type' => ['label' => 'Loại mạnh thường quân', 'type' => 'select', 'options' => [
+                'Ca nhan' => 'Cá nhân',
+                'Doanh nghiep' => 'Doanh nghiệp',
+            ]],
+            '_birth_date' => ['label' => 'Ngày sinh', 'type' => 'date'],
+            '_identifier_code' => ['label' => 'Mã số định danh (CMND/CCCD/MST)', 'type' => 'text'],
+            '_phone' => ['label' => 'Số điện thoại', 'type' => 'text'],
+            '_email' => ['label' => 'Email', 'type' => 'email'],
+            '_address' => ['label' => 'Địa chỉ', 'type' => 'textarea'],
+            '_preferred_contact' => ['label' => 'Kênh liên lạc ưu tiên', 'type' => 'select', 'options' => [
+                'Zalo' => 'Zalo',
+                'Email' => 'Email',
+                'Phone' => 'Phone',
+            ]],
+            '_contribution_type' => ['label' => 'Loại đóng góp', 'type' => 'select', 'options' => [
+                'Tien' => 'Tiền',
+                'Hien vat' => 'Hiện vật',
+                'Dich vu' => 'Dịch vụ',
+            ]],
+            '_contribution_value' => ['label' => 'Số tiền / Giá trị quy đổi', 'type' => 'number'],
+            '_contribution_date' => ['label' => 'Ngày đóng góp', 'type' => 'date'],
+            '_contribution_method' => ['label' => 'Hình thức đóng góp', 'type' => 'select', 'options' => [
+                'Chuyen khoan' => 'Chuyển khoản',
+                'Tien mat' => 'Tiền mặt',
+                'Vi dien tu' => 'Ví điện tử',
+            ]],
+            '_campaign_related' => ['label' => 'Chiến dịch / chương trình liên quan', 'type' => 'text'],
+            '_donation_history' => ['label' => 'Lịch sử các lần đóng góp', 'type' => 'textarea'],
+            '_total_contributed' => ['label' => 'Tổng giá trị đã đóng góp', 'type' => 'number'],
+            '_contribution_frequency' => ['label' => 'Tần suất đóng góp', 'type' => 'text'],
+            '_campaign_interest' => ['label' => 'Chiến dịch quan tâm', 'type' => 'textarea'],
+            '_private_notes' => ['label' => 'Ghi chú riêng', 'type' => 'textarea'],
+            '_is_anonymous' => ['label' => 'Ẩn danh', 'type' => 'select', 'options' => [
+                '0' => 'Không',
+                '1' => 'Có',
+            ]],
+            '_marketing_opt_in' => ['label' => 'Đồng ý nhận thông tin', 'type' => 'select', 'options' => [
+                '0' => 'Không',
+                '1' => 'Có',
+            ]],
             '_gallery_urls' => ['label' => 'Gallery URLs (mỗi dòng một ảnh)', 'type' => 'textarea'],
-            '_external_url' => ['label' => 'Link đóng góp bên ngoài', 'type' => 'url'],
         ],
         'event' => [
             '_venue' => ['label' => 'Địa điểm tổ chức', 'type' => 'text'],
@@ -91,6 +136,14 @@ function haritics_render_meta_box(\WP_Post $post, array $meta_box): void
 
         if ($field['type'] === 'textarea') {
             echo '<textarea class="large-text" rows="4" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '">' . esc_textarea((string) $value) . '</textarea>';
+        } elseif ($field['type'] === 'select') {
+            $options = $field['options'] ?? [];
+            echo '<select class="regular-text" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '">';
+            echo '<option value="">' . esc_html__('Chọn', 'haritics') . '</option>';
+            foreach ($options as $option_value => $option_label) {
+                echo '<option value="' . esc_attr((string) $option_value) . '"' . selected((string) $value, (string) $option_value, false) . '>' . esc_html((string) $option_label) . '</option>';
+            }
+            echo '</select>';
         } else {
             echo '<input class="regular-text" type="' . esc_attr($field['type']) . '" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '" value="' . esc_attr((string) $value) . '">';
         }
@@ -134,6 +187,9 @@ function haritics_save_meta_boxes(int $post_id): void
                 break;
             case 'textarea':
                 $sanitized = wp_kses_post($value);
+                break;
+            case 'select':
+                $sanitized = sanitize_text_field($value);
                 break;
             default:
                 $sanitized = sanitize_text_field($value);
