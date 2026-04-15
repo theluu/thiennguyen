@@ -171,6 +171,36 @@ function haritics_get_meta(int $post_id, string $key, string $default = ''): str
     return $default;
 }
 
+function haritics_get_project_leader(int $project_id, string $default = ''): string
+{
+    // First try to get leader by ID (new field)
+    $leader_id = haritics_get_meta($project_id, '_leader_id');
+    if ($leader_id !== '') {
+        $leader_post = get_post((int) $leader_id);
+        if ($leader_post && $leader_post->post_status === 'publish') {
+            return $leader_post->post_title;
+        }
+    }
+
+    // Fallback to old text field
+    return haritics_get_meta($project_id, '_leader_text', $default);
+}
+
+function haritics_get_project_donor(int $project_id, string $default = ''): string
+{
+    // First try to get donor by ID (new field)
+    $donor_id = haritics_get_meta($project_id, '_donor_id');
+    if ($donor_id !== '') {
+        $donor_post = get_post((int) $donor_id);
+        if ($donor_post && $donor_post->post_status === 'publish') {
+            return $donor_post->post_title;
+        }
+    }
+
+    // Fallback to old text field
+    return haritics_get_meta($project_id, '_donor_text', $default);
+}
+
 function haritics_get_gallery_urls(int $post_id, string $meta_key): array
 {
     $raw = trim(haritics_get_meta($post_id, $meta_key));
@@ -436,19 +466,53 @@ function haritics_build_project_filter_meta_query(array $filters): array
 {
     $meta_query = ['relation' => 'AND'];
 
+    // organizer filter - search in leader_text OR in leader_id (post title)
     if (! empty($filters['organizer'])) {
+        $leader_posts = get_posts([
+            'post_type' => 'team',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            's' => $filters['organizer'],
+            'fields' => 'ids',
+        ]);
+
         $meta_query[] = [
-            'key' => '_leader_text',
-            'value' => $filters['organizer'],
-            'compare' => 'LIKE',
+            'relation' => 'OR',
+            [
+                'key' => '_leader_text',
+                'value' => $filters['organizer'],
+                'compare' => 'LIKE',
+            ],
+            [
+                'key' => '_leader_id',
+                'value' => $leader_posts,
+                'compare' => 'IN',
+            ],
         ];
     }
 
+    // donor filter - search in donor_text OR in donor_id (post title)
     if (! empty($filters['donor'])) {
+        $donor_posts = get_posts([
+            'post_type' => 'donation',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            's' => $filters['donor'],
+            'fields' => 'ids',
+        ]);
+
         $meta_query[] = [
-            'key' => '_donor_text',
-            'value' => $filters['donor'],
-            'compare' => 'LIKE',
+            'relation' => 'OR',
+            [
+                'key' => '_donor_text',
+                'value' => $filters['donor'],
+                'compare' => 'LIKE',
+            ],
+            [
+                'key' => '_donor_id',
+                'value' => $donor_posts,
+                'compare' => 'IN',
+            ],
         ];
     }
 
@@ -575,13 +639,27 @@ function haritics_apply_advanced_search(\WP_Query $query): void
 
     $meta_queries = [];
 
+    // organizer filter - search in team posts OR project meta fields
     if ($filters['organizer'] !== '') {
+        $leader_posts = get_posts([
+            'post_type' => 'team',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            's' => $filters['organizer'],
+            'fields' => 'ids',
+        ]);
+
         $meta_queries[] = [
             'relation' => 'OR',
             [
                 'key' => '_leader_text',
                 'value' => $filters['organizer'],
                 'compare' => 'LIKE',
+            ],
+            [
+                'key' => '_leader_id',
+                'value' => $leader_posts,
+                'compare' => 'IN',
             ],
             [
                 'key' => '_organizer',
@@ -596,13 +674,27 @@ function haritics_apply_advanced_search(\WP_Query $query): void
         ];
     }
 
+    // donor filter - search in donation posts OR project meta fields
     if ($filters['donor'] !== '') {
+        $donor_posts = get_posts([
+            'post_type' => 'donation',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            's' => $filters['donor'],
+            'fields' => 'ids',
+        ]);
+
         $meta_queries[] = [
             'relation' => 'OR',
             [
                 'key' => '_donor_text',
                 'value' => $filters['donor'],
                 'compare' => 'LIKE',
+            ],
+            [
+                'key' => '_donor_id',
+                'value' => $donor_posts,
+                'compare' => 'IN',
             ],
             [
                 'key' => '_badge',

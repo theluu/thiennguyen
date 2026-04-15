@@ -74,8 +74,8 @@ $has_results = false;
                             <?php
                             $location = haritics_get_meta($project->ID, '_location', get_the_excerpt($project));
                             $status = haritics_get_meta($project->ID, '_status');
-                            $leader = haritics_get_meta($project->ID, '_leader_text');
-                            $donor = haritics_get_meta($project->ID, '_donor_text');
+                            $leader = haritics_get_project_leader($project->ID);
+                            $donor = haritics_get_project_donor($project->ID);
                             $target = haritics_get_meta($project->ID, '_target_amount');
                             $leader_condition = haritics_get_meta($project->ID, '_leader_condition');
                             $leader_apply = haritics_get_meta($project->ID, '_leader_apply');

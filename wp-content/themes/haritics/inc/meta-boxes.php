@@ -35,8 +35,13 @@ function haritics_meta_fields(): array
             '_raised_amount' => ['label' => 'Đã gây quỹ', 'type' => 'number'],
             '_start_date' => ['label' => 'Ngày bắt đầu', 'type' => 'date'],
             '_end_date' => ['label' => 'Ngày kết thúc', 'type' => 'date'],
-            '_status' => ['label' => 'Trạng thái', 'type' => 'text'],
-            '_leader_text' => ['label' => 'Lãnh đạo dự án', 'type' => 'text'],
+            '_status' => ['label' => 'Trạng thái', 'type' => 'select', 'options' => [
+                'Dang-huy-dong' => 'Đang huy động',
+                'Tieu-bieu' => 'Tiêu biểu',
+                'Dang-trien-khai' => 'Đang triển khai',
+                'Dang-sap-trien-khai' => 'Đang sắp triển khai',
+            ]],
+            '_leader_id' => ['label' => 'Lãnh đạo dự án', 'type' => 'post_select', 'post_type' => 'team'],
             '_leader_condition' => ['label' => 'Link xem điều kiện lãnh đạo', 'type' => 'url'],
             '_leader_apply' => ['label' => 'Link ứng tuyển lãnh đạo', 'type' => 'url'],
             '_volunteer_needed' => ['label' => 'Nhân sự cần huy động', 'type' => 'text'],
@@ -45,7 +50,7 @@ function haritics_meta_fields(): array
             '_resources_other' => ['label' => 'Các nguồn lực khác', 'type' => 'textarea'],
             '_resources_detail' => ['label' => 'Link xem chi tiết nguồn lực', 'type' => 'url'],
             '_resources_donate' => ['label' => 'Link muốn đóng góp', 'type' => 'url'],
-            '_donor_text' => ['label' => 'Nhà hảo tâm', 'type' => 'text'],
+            '_donor_id' => ['label' => 'Nhà hảo tâm', 'type' => 'post_select', 'post_type' => 'donation'],
             '_leader_list_url' => ['label' => 'Link xem danh sách lãnh đạo', 'type' => 'url'],
             '_donor_list_url' => ['label' => 'Link xem danh sách nhà hảo tâm', 'type' => 'url'],
             '_accounting_public_url' => ['label' => 'Link bài viết quyết toán công khai', 'type' => 'url'],
@@ -144,6 +149,21 @@ function haritics_render_meta_box(\WP_Post $post, array $meta_box): void
                 echo '<option value="' . esc_attr((string) $option_value) . '"' . selected((string) $value, (string) $option_value, false) . '>' . esc_html((string) $option_label) . '</option>';
             }
             echo '</select>';
+        } elseif ($field['type'] === 'post_select') {
+            $post_type = $field['post_type'] ?? 'post';
+            $posts = get_posts([
+                'post_type' => $post_type,
+                'post_status' => 'publish',
+                'posts_per_page' => -1,
+                'orderby' => 'title',
+                'order' => 'ASC',
+            ]);
+            echo '<select class="regular-text" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '">';
+            echo '<option value="">' . esc_html__('Chọn', 'haritics') . '</option>';
+            foreach ($posts as $post_item) {
+                echo '<option value="' . esc_attr((string) $post_item->ID) . '"' . selected($value, (string) $post_item->ID, false) . '>' . esc_html($post_item->post_title) . '</option>';
+            }
+            echo '</select>';
         } else {
             echo '<input class="regular-text" type="' . esc_attr($field['type']) . '" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '" value="' . esc_attr((string) $value) . '">';
         }
@@ -189,6 +209,7 @@ function haritics_save_meta_boxes(int $post_id): void
                 $sanitized = wp_kses_post($value);
                 break;
             case 'select':
+            case 'post_select':
                 $sanitized = sanitize_text_field($value);
                 break;
             default:
