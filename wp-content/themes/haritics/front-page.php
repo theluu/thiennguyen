@@ -5,19 +5,32 @@ if (! defined('ABSPATH')) {
 
 get_header();
 
-$hero_badge = haritics_get_option('home_hero_badge', __('Chung tay vì cộng đồng', 'haritics'));
-$hero_title = haritics_get_option('home_hero_title', __('Kết nối nguồn lực cho những dự án thiện nguyện thiết thực', 'haritics'));
-$hero_description = haritics_get_option('home_hero_description', __('Nền tảng giúp kết nối nhà tổ chức, mạnh thường quân và các nguồn lực xã hội để cùng tạo ra những dự án minh bạch, bền vững và phù hợp với nhu cầu thực tế tại địa phương.', 'haritics'));
-$hero_image = haritics_get_option('home_hero_image', haritics_theme_asset('assets/img/banner-img.png'));
-$hero_cta_text = haritics_get_option('home_primary_cta_text', __('Ủng hộ ngay', 'haritics'));
 $resource_projects_url = trailingslashit(get_post_type_archive_link('project') ?: haritics_route_url('project')) . '#du-an-keu-goi-nguon-luc';
 $hero_cta_url = haritics_get_option('home_primary_cta_url', $resource_projects_url);
 $stat_number = haritics_get_option('home_stat_number', '2M+');
 $stat_label = haritics_get_option('home_stat_label', __('Mạnh thường quân đang đồng hành', 'haritics'));
-$about_badge = haritics_get_option('home_about_badge', __('Về chúng tôi', 'haritics'));
-$about_title = haritics_get_option('home_about_title', __('Lan tỏa tinh thần sẻ chia để cộng đồng cùng phát triển', 'haritics'));
-$about_description = haritics_get_option('home_about_description', __('Thiện Nguyện hướng tới việc kết nối đúng người, đúng dự án và đúng nguồn lực. Chúng tôi mong muốn mỗi đóng góp đều được sử dụng hiệu quả, công khai và tạo ra giá trị lâu dài cho cộng đồng thụ hưởng.', 'haritics'));
-$about_image = haritics_get_option('home_about_image', haritics_theme_asset('assets/img/about-img.png'));
+
+// Lấy ID của trang hiện tại (Trang chủ)
+$page_id = get_the_ID();
+
+// --- HEADER BANNER ---
+$hero_badge       = get_post_meta($page_id, '_hero_badge', true) ?: haritics_get_option('home_hero_badge', __('Chung tay vì cộng đồng', 'haritics'));
+$hero_title       = get_post_meta($page_id, '_hero_title', true) ?: haritics_get_option('home_hero_title', __('Kết nối nguồn lực cho những dự án thiện nguyện thiết thực', 'haritics'));
+$hero_description = get_post_meta($page_id, '_hero_description', true) ?: haritics_get_option('home_hero_description', __('Nền tảng giúp kết nối nhà tổ chức...', 'haritics'));
+// Đoạn này thay cho phần lấy ảnh cũ
+$hero_image_id = get_post_meta($page_id, '_hero_image_id', true);
+$hero_image    = $hero_image_id ? wp_get_attachment_url($hero_image_id) : haritics_theme_asset('assets/img/banner-img.png');
+$hero_cta_text    = get_post_meta($page_id, '_hero_cta_text', true) ?: __('Ủng hộ ngay', 'haritics');
+
+// --- ABOUT US ---
+$about_badge       = get_post_meta($page_id, '_about_badge', true) ?: haritics_get_option('home_about_badge', __('Về chúng tôi', 'haritics'));
+$about_title       = get_post_meta($page_id, '_about_title', true) ?: haritics_get_option('home_about_title', __('Lan tỏa tinh thần sẻ chia...', 'haritics'));
+$about_description = get_post_meta($page_id, '_about_description', true) ?: haritics_get_option('home_about_description', __('Thiện Nguyện hướng tới...', 'haritics'));
+$about_image_id = get_post_meta($page_id, '_about_image_id', true);
+$about_image    = $about_image_id ? wp_get_attachment_url($about_image_id) : haritics_theme_asset('assets/img/about-img.png');
+
+
+
 $projects_calling = haritics_get_projects_by_status('Đang huy động', 8);
 $projects_featured = haritics_get_projects_by_status('Tiêu biểu', 8);
 $projects_implementing = haritics_get_projects_by_status('Đang triển khai', 8);
