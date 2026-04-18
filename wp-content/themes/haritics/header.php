@@ -8,6 +8,7 @@ $header_cta_text = haritics_get_option('header_cta_text', __('Liên hệ tư v�
 $header_cta_url = haritics_get_option('header_cta_url', 'tel:' . preg_replace('/\s+/', '', haritics_get_option('hotline', '19001234')));
 $header_button_text = haritics_get_option('header_button_text', __('Xem dự án', 'haritics'));
 $header_button_url = haritics_get_option('header_button_url', get_post_type_archive_link('project') ?: haritics_route_url('project'));
+$haritics_project_search_url = get_post_type_archive_link('project') ?: haritics_route_url('project');
 $social_links = haritics_get_social_links_from_options();
 $search_filters = haritics_get_search_filters();
 ?><!DOCTYPE html>
@@ -45,7 +46,7 @@ $search_filters = haritics_get_search_filters();
 
 <div class="ul-search-form-wrapper flex-grow-1 flex-shrink-0">
     <button class="ul-search-closer"><i class="flaticon-close"></i></button>
-    <form action="<?php echo esc_url(home_url('/')); ?>" class="ul-search-form ul-search-form--advanced" method="get">
+    <form action="<?php echo esc_url($haritics_project_search_url); ?>" class="ul-search-form ul-search-form--advanced" method="get">
         <div class="ul-search-form-inner">
             <div class="ul-search-form-heading">
                 <span class="ul-section-sub-title text-white"><?php esc_html_e('Tìm kiếm nhanh', 'haritics'); ?></span>

@@ -24,7 +24,18 @@ while (have_posts()) : the_post();
     $location = haritics_get_meta($current_post_id, '_location');
     $accounting_public_url = haritics_get_meta($current_post_id, '_accounting_public_url');
     $related_issues = haritics_get_meta($current_post_id, '_related_issues');
-    $status = haritics_get_meta($current_post_id, '_status', __('Đang cập nhật', 'haritics'));
+    $status_raw = haritics_get_meta($current_post_id, '_status', '');
+    $status = $status_raw !== ''
+        ? haritics_get_project_status_label($status_raw)
+        : __('Đang cập nhật', 'haritics');
+
+    $leader_condition = haritics_get_meta($current_post_id, '_leader_condition');
+    $volunteer_needed = haritics_get_meta($current_post_id, '_volunteer_needed');
+    $volunteer_condition = haritics_get_meta($current_post_id, '_volunteer_condition');
+    $resources_other = haritics_get_meta($current_post_id, '_resources_other');
+    $resources_detail = haritics_get_meta($current_post_id, '_resources_detail');
+    $is_calling_project = haritics_get_project_card_type_for_post($current_post_id) === 'calling';
+    $haritics_req = sanitize_key((string) ($_GET['haritics_req'] ?? ''));
 
     $project_terms = wp_get_post_terms($current_post_id, 'project_category', ['fields' => 'ids']);
     $related_projects_args = [
@@ -156,6 +167,91 @@ while (have_posts()) : the_post();
                             </section>
                         <?php endforeach; ?>
 
+                        <?php if ($is_calling_project) : ?>
+                            <?php if ($haritics_req === 'apply_ok') : ?>
+                                <p class="haritics-project-notice haritics-project-notice--success"><?php esc_html_e('Đã gửi đơn ứng tuyển. Chúng tôi sẽ liên hệ bạn sớm.', 'haritics'); ?></p>
+                            <?php elseif ($haritics_req === 'contribute_ok') : ?>
+                                <p class="haritics-project-notice haritics-project-notice--success"><?php esc_html_e('Đã gửi thông tin đóng góp. Cảm ơn bạn!', 'haritics'); ?></p>
+                            <?php elseif (in_array($haritics_req, ['error', 'invalid'], true)) : ?>
+                                <p class="haritics-project-notice haritics-project-notice--error"><?php esc_html_e('Gửi không thành công. Vui lòng kiểm tra các trường bắt buộc và thử lại.', 'haritics'); ?></p>
+                            <?php endif; ?>
+
+                            <section class="haritics-project-section haritics-project-calling-forms" id="haritics-keu-goi-nguon-luc">
+                                <div class="haritics-project-section-head">
+                                    <h2 class="ul-event-details-inner-title"><?php esc_html_e('Dự án đang kêu gọi nguồn lực', 'haritics'); ?></h2>
+                                </div>
+
+                                <div class="haritics-calling-summary mb-4">
+                                    <p><strong><?php esc_html_e('Số vốn cần huy động:', 'haritics'); ?></strong> <?php echo esc_html($target_amount !== '' ? haritics_format_money($target_amount) : __('Chưa cập nhật', 'haritics')); ?></p>
+                                    <p><strong><?php esc_html_e('Lãnh đạo dự án:', 'haritics'); ?></strong> <?php echo esc_html($leader_text !== '' ? $leader_text : '—'); ?>
+                                        <?php if ($leader_condition !== '' && filter_var($leader_condition, FILTER_VALIDATE_URL)) : ?>
+                                            <a class="ul-btn-condition ms-2" href="<?php echo esc_url($leader_condition); ?>"><?php esc_html_e('Xem điều kiện', 'haritics'); ?></a>
+                                        <?php endif; ?>
+                                    </p>
+                                    <p><strong><?php esc_html_e('Nhân sự cần huy động:', 'haritics'); ?></strong> <?php echo esc_html($volunteer_needed !== '' ? $volunteer_needed : '—'); ?>
+                                        <?php if ($volunteer_condition !== '' && filter_var($volunteer_condition, FILTER_VALIDATE_URL)) : ?>
+                                            <a class="ul-btn-condition ms-2" href="<?php echo esc_url($volunteer_condition); ?>"><?php esc_html_e('Xem điều kiện', 'haritics'); ?></a>
+                                        <?php endif; ?>
+                                    </p>
+                                    <p><strong><?php esc_html_e('Các nguồn lực khác:', 'haritics'); ?></strong> <?php echo esc_html($resources_other !== '' ? wp_strip_all_tags($resources_other) : '—'); ?>
+                                        <?php if ($resources_detail !== '' && filter_var($resources_detail, FILTER_VALIDATE_URL)) : ?>
+                                            <a class="ul-btn-condition ms-2" href="<?php echo esc_url($resources_detail); ?>"><?php esc_html_e('Xem chi tiết', 'haritics'); ?></a>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+
+                                <div class="haritics-project-form-block mb-5" id="haritics-form-apply-leader">
+                                    <h3 class="h5 mb-3"><?php esc_html_e('Ứng tuyển — Lãnh đạo dự án', 'haritics'); ?></h3>
+                                    <form class="haritics-inline-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                                        <input type="hidden" name="action" value="haritics_project_apply_submit">
+                                        <input type="hidden" name="project_id" value="<?php echo esc_attr((string) $current_post_id); ?>">
+                                        <input type="hidden" name="apply_role" value="leader">
+                                        <?php wp_nonce_field('haritics_project_apply', 'haritics_apply_nonce'); ?>
+                                        <div class="row g-3">
+                                            <div class="col-md-6"><label class="d-block mb-1"><?php esc_html_e('Họ tên', 'haritics'); ?> <span class="text-danger">*</span></label><input class="form-control" type="text" name="applicant_name" required autocomplete="name"></div>
+                                            <div class="col-md-6"><label class="d-block mb-1"><?php esc_html_e('Email', 'haritics'); ?> <span class="text-danger">*</span></label><input class="form-control" type="email" name="applicant_email" required autocomplete="email"></div>
+                                            <div class="col-md-6"><label class="d-block mb-1"><?php esc_html_e('Điện thoại', 'haritics'); ?></label><input class="form-control" type="text" name="applicant_phone" autocomplete="tel"></div>
+                                            <div class="col-12"><label class="d-block mb-1"><?php esc_html_e('Nội dung / kinh nghiệm', 'haritics'); ?></label><textarea class="form-control" name="applicant_message" rows="4"></textarea></div>
+                                            <div class="col-12"><button type="submit" class="ul-btn"><i class="flaticon-fast-forward-double-right-arrows-symbol"></i> <?php esc_html_e('Gửi ứng tuyển', 'haritics'); ?></button></div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="haritics-project-form-block mb-5" id="haritics-form-apply-volunteer">
+                                    <h3 class="h5 mb-3"><?php esc_html_e('Ứng tuyển — Nhân sự / tình nguyện', 'haritics'); ?></h3>
+                                    <form class="haritics-inline-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                                        <input type="hidden" name="action" value="haritics_project_apply_submit">
+                                        <input type="hidden" name="project_id" value="<?php echo esc_attr((string) $current_post_id); ?>">
+                                        <input type="hidden" name="apply_role" value="volunteer">
+                                        <?php wp_nonce_field('haritics_project_apply', 'haritics_apply_nonce'); ?>
+                                        <div class="row g-3">
+                                            <div class="col-md-6"><label class="d-block mb-1"><?php esc_html_e('Họ tên', 'haritics'); ?> <span class="text-danger">*</span></label><input class="form-control" type="text" name="applicant_name" required autocomplete="name"></div>
+                                            <div class="col-md-6"><label class="d-block mb-1"><?php esc_html_e('Email', 'haritics'); ?> <span class="text-danger">*</span></label><input class="form-control" type="email" name="applicant_email" required autocomplete="email"></div>
+                                            <div class="col-md-6"><label class="d-block mb-1"><?php esc_html_e('Điện thoại', 'haritics'); ?></label><input class="form-control" type="text" name="applicant_phone" autocomplete="tel"></div>
+                                            <div class="col-12"><label class="d-block mb-1"><?php esc_html_e('Nội dung đăng ký', 'haritics'); ?></label><textarea class="form-control" name="applicant_message" rows="4"></textarea></div>
+                                            <div class="col-12"><button type="submit" class="ul-btn"><i class="flaticon-fast-forward-double-right-arrows-symbol"></i> <?php esc_html_e('Gửi ứng tuyển', 'haritics'); ?></button></div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="haritics-project-form-block mb-4" id="haritics-form-contribute">
+                                    <h3 class="h5 mb-3"><?php esc_html_e('Muốn đóng góp', 'haritics'); ?></h3>
+                                    <form class="haritics-inline-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                                        <input type="hidden" name="action" value="haritics_project_contribute_submit">
+                                        <input type="hidden" name="project_id" value="<?php echo esc_attr((string) $current_post_id); ?>">
+                                        <?php wp_nonce_field('haritics_project_contribute', 'haritics_contribute_nonce'); ?>
+                                        <div class="row g-3">
+                                            <div class="col-md-6"><label class="d-block mb-1"><?php esc_html_e('Họ tên', 'haritics'); ?> <span class="text-danger">*</span></label><input class="form-control" type="text" name="contributor_name" required autocomplete="name"></div>
+                                            <div class="col-md-6"><label class="d-block mb-1"><?php esc_html_e('Email', 'haritics'); ?> <span class="text-danger">*</span></label><input class="form-control" type="email" name="contributor_email" required autocomplete="email"></div>
+                                            <div class="col-md-6"><label class="d-block mb-1"><?php esc_html_e('Điện thoại', 'haritics'); ?></label><input class="form-control" type="text" name="contributor_phone" autocomplete="tel"></div>
+                                            <div class="col-12"><label class="d-block mb-1"><?php esc_html_e('Nội dung / hình thức muốn đóng góp', 'haritics'); ?></label><textarea class="form-control" name="contribution_note" rows="4"></textarea></div>
+                                            <div class="col-12"><button type="submit" class="ul-btn"><i class="flaticon-fast-forward-double-right-arrows-symbol"></i> <?php esc_html_e('Gửi đăng ký', 'haritics'); ?></button></div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </section>
+                        <?php endif; ?>
+
                         <section class="haritics-project-section" id="chi-tiet-noi-dung">
                             <div class="haritics-project-section-head">
                                 <h2 class="ul-event-details-inner-title"><?php esc_html_e('Nội dung chi tiết dự án', 'haritics'); ?></h2>
@@ -183,6 +279,9 @@ while (have_posts()) : the_post();
                                 <?php foreach ($detail_sections as $section) : ?>
                                     <li><a href="#<?php echo esc_attr($section['id']); ?>"><?php echo esc_html($section['title']); ?></a></li>
                                 <?php endforeach; ?>
+                                <?php if ($is_calling_project) : ?>
+                                    <li><a href="#haritics-keu-goi-nguon-luc"><?php esc_html_e('Kêu gọi nguồn lực & đăng ký', 'haritics'); ?></a></li>
+                                <?php endif; ?>
                                 <li><a href="#chi-tiet-noi-dung"><?php esc_html_e('Nội dung chi tiết dự án', 'haritics'); ?></a></li>
                             </ul>
                         </div>

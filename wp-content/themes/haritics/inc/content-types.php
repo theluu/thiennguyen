@@ -75,6 +75,36 @@ function haritics_register_content_types(): void
         'supports' => ['title', 'editor'],
     ]);
 
+    register_post_type('haritics_apply', [
+        'labels' => [
+            'name' => __('Ứng tuyển dự án', 'haritics'),
+            'singular_name' => __('Đơn ứng tuyển', 'haritics'),
+            'add_new_item' => __('Thêm đơn ứng tuyển', 'haritics'),
+        ],
+        'public' => false,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'menu_icon' => 'dashicons-clipboard',
+        'supports' => ['title', 'editor'],
+        'capability_type' => 'post',
+        'map_meta_cap' => true,
+    ]);
+
+    register_post_type('haritics_contribute', [
+        'labels' => [
+            'name' => __('Muốn đóng góp', 'haritics'),
+            'singular_name' => __('Đăng ký đóng góp', 'haritics'),
+            'add_new_item' => __('Thêm đăng ký', 'haritics'),
+        ],
+        'public' => false,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'menu_icon' => 'dashicons-heart',
+        'supports' => ['title', 'editor'],
+        'capability_type' => 'post',
+        'map_meta_cap' => true,
+    ]);
+
     register_taxonomy('project_category', ['project'], [
         'label' => __('Danh mục dự án', 'haritics'),
         'hierarchical' => true,

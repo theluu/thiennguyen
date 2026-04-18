@@ -73,6 +73,34 @@ Text Domain: haritics
     color: #b91c1c;
 }
 
+.haritics-project-notice {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+}
+
+.haritics-project-notice--success {
+    background: #e8fff1;
+    color: #166534;
+}
+
+.haritics-project-notice--error {
+    background: #fff1f2;
+    color: #b91c1c;
+}
+
+.haritics-project-form-block {
+    scroll-margin-top: 100px;
+    padding: 20px;
+    border: 1px solid var(--ul-gray2, #d7dff0);
+    border-radius: 12px;
+    background: var(--ul-c4, #f4f8ff);
+}
+
+.haritics-project-calling-forms .haritics-calling-summary p {
+    margin-bottom: 0.5rem;
+}
+
 .ul-pagination {
     display: flex;
     flex-wrap: wrap;

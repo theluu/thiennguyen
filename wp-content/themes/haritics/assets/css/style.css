@@ -5389,3 +5389,65 @@ button {
   background-color: var(--ul-primary);
   color: var(--white);
 }/*# sourceMappingURL=style.css.map */
+/* Layout cho các dòng meta */
+.ul-project-meta {
+    margin-bottom: 12px;
+}
+
+.ul-meta-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 6px;
+}
+
+/* Container cho các nút chia đôi */
+.ul-meta-buttons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Chia 2 cột bằng nhau */
+    gap: 8px; /* Khoảng cách giữa 2 nút */
+}
+
+/* Style chung cho nút */
+.ul-meta-buttons-grid a {
+    display: block;
+    text-align: center;
+    padding: 8px 5px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+/* Nút Xem điều kiện / Chi tiết (Dạng Outline) */
+.ul-btn-condition-outline {
+    background: transparent;
+    color: #444;
+    border: 1px solid #ddd;
+}
+
+.ul-btn-condition-outline:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+}
+
+/* Nút Ứng tuyển / Đóng góp (Dạng Solid - Màu cam) */
+.ul-btn-apply-solid {
+    background-color: #ff5722; /* Màu cam thương hiệu */
+    color: #fff !important;
+    border: 1px solid #ff5722;
+}
+
+.ul-btn-apply-solid:hover {
+    background-color: #e64a19;
+    border-color: #e64a19;
+}
+.haritics-rounded-popup {
+    border-radius: 20px !important;
+    border: none !important;
+}
+.swal2-title {
+    padding-top: 10px !important;
+}

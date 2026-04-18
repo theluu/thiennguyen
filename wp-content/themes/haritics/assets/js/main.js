@@ -50,21 +50,48 @@ document.addEventListener("DOMContentLoaded", (event) => {
         });
     }
 
-    // header search in mobile start
+    // header search popup
+    const ulSearchFormWrapper = document.querySelector(".ul-search-form-wrapper");
     const ulHeaderSearchOpener = document.querySelector(".ul-header-search-opener");
-    const ulHeaderSearchCloser = document.querySelector(".ul-search-closer");
-    if (ulHeaderSearchOpener) {
+    const ulSearchClosers = document.querySelectorAll(".ul-search-closer");
+
+    function hariticsCloseHeaderSearch() {
+        if (ulSearchFormWrapper) {
+            ulSearchFormWrapper.classList.remove("active");
+        }
+    }
+
+    function hariticsOpenHeaderSearch() {
+        if (ulSearchFormWrapper) {
+            ulSearchFormWrapper.classList.add("active");
+        }
+    }
+
+    if (ulHeaderSearchOpener && ulSearchFormWrapper) {
         ulHeaderSearchOpener.addEventListener("click", () => {
-            document.querySelector(".ul-search-form-wrapper").classList.add("active");
+            hariticsOpenHeaderSearch();
         });
     }
 
-    if (ulHeaderSearchCloser) {
-        ulHeaderSearchCloser.addEventListener("click", () => {
-            document.querySelector(".ul-search-form-wrapper").classList.remove("active");
+    ulSearchClosers.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            hariticsCloseHeaderSearch();
+        });
+    });
+
+    if (ulSearchFormWrapper) {
+        ulSearchFormWrapper.addEventListener("click", (e) => {
+            if (e.target === ulSearchFormWrapper) {
+                hariticsCloseHeaderSearch();
+            }
+        });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && ulSearchFormWrapper.classList.contains("active")) {
+                hariticsCloseHeaderSearch();
+            }
         });
     }
-    // header search in mobile end
+    // header search popup end
 
     // sticky header
     const ulHeader = document.querySelector(".to-be-sticky");
@@ -865,10 +892,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
         }
     });
 
-
-
-
-
     // ------------------------------- Index 2 js -------------------------------
     // banner slider
 
@@ -969,6 +992,63 @@ document.addEventListener("DOMContentLoaded", (event) => {
         }
     });
 
+const popupLinks = document.querySelectorAll('.open-popup-link');
+
+popupLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const target = this.getAttribute('href');
+        const applyUrl = this.getAttribute('data-apply-url'); // Lấy link ứng tuyển từ data attribute
+        let config = {};
+
+        if (target === '#popup-leader-cond') {
+            config = {
+                title: '<h2 style="color: #ff5722; font-weight: 700;">Tiêu chuẩn Lãnh đạo</h2>',
+                html: `
+                    <div style="text-align: left; font-size: 15px; line-height: 1.8; color: #333;">
+                        <p style="margin-bottom: 15px; border-left: 4px solid #ff5722; padding-left: 10px; font-style: italic;">"Lãnh đạo là người thắp lửa và giữ lửa cho sự tử tế."</p>
+                        <p><b>• Minh bạch:</b> Cam kết công khai 100% tài chính.</p>
+                        <p><b>• Kết nối:</b> Có khả năng điều phối nguồn lực tại địa phương.</p>
+                        <p><b>• Trách nhiệm:</b> Đồng hành trực tiếp tại hiện trường dự án.</p>
+                    </div>`,
+                confirmButtonText: 'Ứng tuyển ngay',
+            };
+        } else {
+            config = {
+                title: '<h2 style="color: #ff5722; font-weight: 700;">Điều kiện Nhân sự</h2>',
+                html: `
+                    <div style="text-align: left; font-size: 15px; line-height: 1.8; color: #333;">
+                        <p style="margin-bottom: 15px; border-left: 4px solid #4CAF50; padding-left: 10px; font-style: italic;">"Góp sức nhỏ cho thay đổi lớn."</p>
+                        <p><b>• Chuyên môn:</b> Phù hợp với đặc thù dự án đang kêu gọi.</p>
+                        <p><b>• Thái độ:</b> Tôn trọng văn hóa bản địa, kỷ luật đội nhóm tốt.</p>
+                        <p><b>• Sức khỏe:</b> Đảm bảo tham gia các hoạt động tại địa bàn.</p>
+                    </div>`,
+                confirmButtonText: 'Đăng ký tham gia',
+            };
+        }
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                ...config,
+                icon: 'info',
+                width: '550px',
+                confirmButtonColor: '#ff5722',
+                showCancelButton: true,
+                cancelButtonText: 'Để sau',
+                focusConfirm: false,
+                customClass: {
+                    popup: 'haritics-rounded-popup'
+                }
+            }).then((result) => {
+                // Nếu người dùng nhấn nút màu cam (Confirm)
+                if (result.isConfirmed) {
+                    window.location.href = applyUrl;
+                }
+            });
+        }
+    });
+});
 
     // footer copyright text year 
     document.getElementById("footer-copyright-year").textContent = new Date().getFullYear();

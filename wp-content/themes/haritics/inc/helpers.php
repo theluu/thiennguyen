@@ -37,19 +37,6 @@ function haritics_has_active_search_filters(): bool
     return false;
 }
 
-function haritics_get_search_keyword(): string
-{
-    $filters = haritics_get_search_filters();
-
-    foreach (['s', 'organizer', 'donor', 'location'] as $key) {
-        if ($filters[$key] !== '') {
-            return $filters[$key];
-        }
-    }
-
-    return '';
-}
-
 function haritics_get_search_result_label(): string
 {
     $filters = haritics_get_search_filters();
@@ -199,6 +186,140 @@ function haritics_get_project_donor(int $project_id, string $default = ''): stri
 
     // Fallback to old text field
     return haritics_get_meta($project_id, '_donor_text', $default);
+}
+
+/**
+ * Thẻ dự án (trang chủ / archive) — $type: calling|featured|implementing|upcoming.
+ */
+function haritics_render_project_card(\WP_Post $project, string $type): void
+{
+    $target = haritics_get_meta($project->ID, '_target_amount', '0');
+    $raised = haritics_get_meta($project->ID, '_raised_amount', '0');
+    $progress = haritics_progress_percent($raised, $target);
+    $location = haritics_get_meta($project->ID, '_location', get_the_excerpt($project));
+    
+    // Metadata
+    $leader_text = haritics_get_project_leader($project->ID, '');
+    $leader_condition = haritics_get_meta($project->ID, '_leader_condition', '#');
+    $volunteer_needed = haritics_get_meta($project->ID, '_volunteer_needed', '');
+    $volunteer_condition = haritics_get_meta($project->ID, '_volunteer_condition', '#');
+    $resources_other = haritics_get_meta($project->ID, '_resources_other', '');
+    $resources_detail = haritics_get_meta($project->ID, '_resources_detail', '#');
+    $donor_text = haritics_get_project_donor($project->ID, '');
+    $donor_list_url = haritics_get_meta($project->ID, '_donor_list_url', '#');
+    $leader_list_url = haritics_get_meta($project->ID, '_leader_list_url', '#');
+
+    ?>
+    <article class="ul-project-card">
+        <div class="ul-project-card-img">
+            <?php echo get_the_post_thumbnail($project->ID, 'large', ['alt' => get_the_title($project)]); ?>
+            <?php if ($type === 'calling') : ?>
+                <a href="<?php echo esc_url(get_permalink($project)); ?>" class="ul-btn-view-detail"><?php esc_html_e('Xem chi tiết', 'haritics'); ?></a>
+            <?php endif; ?>
+        </div>
+        
+        <div class="ul-project-card-content">
+            <h3 class="ul-project-card-title">
+                <a href="<?php echo esc_url(get_permalink($project)); ?>"><?php echo esc_html(get_the_title($project)); ?></a>
+            </h3>
+            <p class="ul-project-card-location"><?php echo esc_html($location); ?></p>
+
+            <div class="ul-project-progress">
+                <div class="ul-progress-container">
+                    <div class="ul-progressbar" data-ul-progress-value="<?php echo esc_attr((string) $progress); ?>">
+                        <div class="ul-progress-label"></div>
+                    </div>
+                </div>
+                <div class="ul-progress-info">
+                    <span class="ul-progress-percent"><?php echo esc_html((string) $progress); ?>%</span>
+                    <span class="ul-progress-amount"><?php echo esc_html(haritics_format_money($raised)); ?> / <?php echo esc_html(haritics_format_money($target)); ?></span>
+                </div>
+            </div>
+
+            <?php
+            if ($type === 'calling') :
+                $pid = (int) $project->ID;
+                $apply_leader_url    = haritics_project_public_form_url($pid, 'haritics-form-apply-leader');
+                $apply_volunteer_url = haritics_project_public_form_url($pid, 'haritics-form-apply-volunteer');
+                $contribute_url      = haritics_project_public_form_url($pid, 'haritics-form-contribute');
+                ?>
+                
+                <div class="ul-project-meta">
+                    <span class="ul-meta-label"><?php esc_html_e('Số vốn cần huy động:', 'haritics'); ?></span>
+                    <span class="ul-meta-value font-weight-bold"><?php echo esc_html($target !== '' && $target !== '0' ? haritics_format_money($target) : __('Chưa cập nhật', 'haritics')); ?></span>
+                </div>
+
+                <div class="ul-project-meta">
+                    <span class="ul-meta-label"><?php esc_html_e('Lãnh đạo dự án:', 'haritics'); ?></span>
+                    <div class="ul-meta-buttons-grid">
+                        <a href="#popup-leader-cond" 
+                        data-apply-url="<?php echo esc_url($apply_leader_url); ?>" 
+                        class="ul-btn-condition-outline open-popup-link">
+                        <?php esc_html_e('Xem điều kiện', 'haritics'); ?>
+                        </a>
+                        <a href="<?php echo esc_url($apply_leader_url); ?>" class="ul-btn-apply-solid"><?php esc_html_e('Ứng tuyển', 'haritics'); ?></a>
+                    </div>
+                </div>
+
+                <div class="ul-project-meta">
+                    <span class="ul-meta-label"><?php esc_html_e('Nhân sự cần huy động:', 'haritics'); ?></span>
+                    <div class="ul-meta-buttons-grid">
+                        <a href="#popup-staff-cond" 
+                        data-apply-url="<?php echo esc_url($apply_volunteer_url); ?>" 
+                        class="ul-btn-condition-outline open-popup-link">
+                        <?php esc_html_e('Xem điều kiện', 'haritics'); ?>
+                        </a>
+                        <a href="<?php echo esc_url($apply_volunteer_url); ?>" class="ul-btn-apply-solid"><?php esc_html_e('Ứng tuyển', 'haritics'); ?></a>
+                    </div>
+                </div>
+
+                <div class="ul-project-meta">
+                    <span class="ul-meta-label"><?php esc_html_e('Các nguồn lực khác:', 'haritics'); ?></span>
+                    <div class="ul-meta-buttons-grid">
+                        <a href="<?php echo esc_url(get_permalink($project)); ?>" class="ul-btn-condition-outline"><?php esc_html_e('Xem chi tiết', 'haritics'); ?></a>
+                        <a href="<?php echo esc_url($contribute_url); ?>" class="ul-btn-apply-solid"><?php esc_html_e('Muốn đóng góp', 'haritics'); ?></a>
+                    </div>
+                </div>
+
+                <?php if (!empty($donor_text)) : ?>
+                <div class="ul-project-meta">
+                    <span class="ul-meta-label"><?php esc_html_e('Nhà hảo tâm:', 'haritics'); ?></span>
+                    <span class="ul-meta-value"><?php echo esc_html($donor_text); ?></span>
+                </div>
+                <?php endif; ?>
+
+            <?php else : ?>
+                <?php if (!empty($leader_text)) : ?>
+                    <div class="ul-project-meta">
+                        <span class="ul-meta-label"><?php esc_html_e('Lãnh đạo dự án:', 'haritics'); ?></span>
+                        <span class="ul-meta-value"><?php echo esc_html($leader_text); ?></span>
+                        <?php if ($leader_list_url !== '' && $leader_list_url !== '#') : ?>
+                            <div class="ul-meta-buttons">
+                                <a href="<?php echo esc_url($leader_list_url); ?>" class="ul-btn-condition"><?php esc_html_e('Xem danh sách', 'haritics'); ?></a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($donor_text)) : ?>
+                    <div class="ul-project-meta">
+                        <span class="ul-meta-label"><?php esc_html_e('Nhà hảo tâm:', 'haritics'); ?></span>
+                        <span class="ul-meta-value"><?php echo esc_html($donor_text); ?></span>
+                        <?php if ($donor_list_url !== '' && $donor_list_url !== '#') : ?>
+                            <div class="ul-meta-buttons">
+                                <a href="<?php echo esc_url($donor_list_url); ?>" class="ul-btn-condition"><?php esc_html_e('Xem danh sách', 'haritics'); ?></a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+
+            <a href="<?php echo esc_url(get_permalink($project)); ?>" class="ul-project-card-btn">
+                <i class="flaticon-up-right-arrow"></i>
+            </a>
+        </div>
+    </article>
+    <?php
 }
 
 function haritics_get_gallery_urls(int $post_id, string $meta_key): array
@@ -409,14 +530,93 @@ function haritics_get_home_posts(string $post_type, int $limit = 3): array
     ]);
 }
 
+/**
+ * Giá trị _status lưu trong DB có thể là slug (meta box select) hoặc nhãn cũ (import).
+ * Trả về nhãn tiếng Việt để hiển thị.
+ */
+function haritics_get_project_status_label(string $stored): string
+{
+    $slug_to_label = [
+        'Dang-huy-dong' => __('Đang kêu gọi nguồn lực', 'haritics'),
+        'Tieu-bieu' => __('Tiêu biểu', 'haritics'),
+        'Dang-trien-khai' => __('Đang triển khai', 'haritics'),
+        'Dang-sap-trien-khai' => __('Đang sắp triển khai', 'haritics'),
+    ];
+
+    if (isset($slug_to_label[$stored])) {
+        return $slug_to_label[$stored];
+    }
+
+    $legacy_calling = [
+        'Đang huy động' => __('Đang kêu gọi nguồn lực', 'haritics'),
+        'Đang kêu gọi' => __('Đang kêu gọi nguồn lực', 'haritics'),
+    ];
+
+    if (isset($legacy_calling[$stored])) {
+        return $legacy_calling[$stored];
+    }
+
+    return $stored;
+}
+
+/**
+ * Khóa loại thẻ dự án (calling|featured|implementing|upcoming) theo meta _status.
+ */
+function haritics_get_project_card_type_for_post(int $post_id): string
+{
+    $stored = haritics_get_meta($post_id, '_status', '');
+    $map = [
+        'Đang huy động' => 'calling',
+        'Đang kêu gọi' => 'calling',
+        'Dang-huy-dong' => 'calling',
+        'Tiêu biểu' => 'featured',
+        'Tieu-bieu' => 'featured',
+        'Đang triển khai' => 'implementing',
+        'Dang-trien-khai' => 'implementing',
+        'Sắp triển khai' => 'upcoming',
+        'Đang sắp triển khai' => 'upcoming',
+        'Dang-sap-trien-khai' => 'upcoming',
+    ];
+
+    return $map[$stored] ?? 'implementing';
+}
+
+/**
+ * Tất cả giá trị meta _status tương đương một nhóm (theo 4 option trong meta box + dữ liệu cũ).
+ *
+ * @return list<string>
+ */
+function haritics_project_status_meta_values_for_group(string $group_key): array
+{
+    $groups = [
+        'calling' => ['Dang-huy-dong', 'Đang huy động', 'Đang kêu gọi'],
+        'featured' => ['Tieu-bieu', 'Tiêu biểu'],
+        'implementing' => ['Dang-trien-khai', 'Đang triển khai'],
+        'upcoming' => ['Dang-sap-trien-khai', 'Đang sắp triển khai', 'Sắp triển khai'],
+    ];
+
+    return $groups[$group_key] ?? [];
+}
+
 function haritics_get_projects_by_status(string $status, int $limit = 4): array
 {
-    $status_aliases = [
-        'Đang huy động' => ['Đang huy động', 'Đang kêu gọi'],
-        'Đang kêu gọi' => ['Đang kêu gọi', 'Đang huy động'],
-        'Sắp triển khai' => ['Sắp triển khai', 'Đang sắp triển khai'],
-        'Đang sắp triển khai' => ['Đang sắp triển khai', 'Sắp triển khai'],
+    $status_to_group = [
+        'Đang huy động' => 'calling',
+        'Đang kêu gọi' => 'calling',
+        'Dang-huy-dong' => 'calling',
+        'Tiêu biểu' => 'featured',
+        'Tieu-bieu' => 'featured',
+        'Đang triển khai' => 'implementing',
+        'Dang-trien-khai' => 'implementing',
+        'Sắp triển khai' => 'upcoming',
+        'Đang sắp triển khai' => 'upcoming',
+        'Dang-sap-trien-khai' => 'upcoming',
     ];
+
+    $group = $status_to_group[$status] ?? null;
+    $values = $group !== null
+        ? haritics_project_status_meta_values_for_group($group)
+        : [$status];
 
     return get_posts([
         'post_type' => 'project',
@@ -425,7 +625,7 @@ function haritics_get_projects_by_status(string $status, int $limit = 4): array
         'meta_query' => [
             [
                 'key' => '_status',
-                'value' => $status_aliases[$status] ?? [$status],
+                'value' => $values,
                 'compare' => 'IN',
             ],
         ],
@@ -437,27 +637,27 @@ function haritics_get_project_status_groups(): array
     return [
         [
             'key' => 'calling',
-            'title' => __('Dự án đang huy động', 'haritics'),
-            'badge' => __('Đang huy động', 'haritics'),
-            'statuses' => ['Đang huy động', 'Đang kêu gọi'],
+            'title' => __('Dự án đang kêu gọi nguồn lực', 'haritics'),
+            'badge' => __('Đang kêu gọi nguồn lực', 'haritics'),
+            'statuses' => haritics_project_status_meta_values_for_group('calling'),
         ],
         [
             'key' => 'featured',
             'title' => __('Dự án tiêu biểu', 'haritics'),
             'badge' => __('Tiêu biểu', 'haritics'),
-            'statuses' => ['Tiêu biểu'],
+            'statuses' => haritics_project_status_meta_values_for_group('featured'),
         ],
         [
             'key' => 'implementing',
             'title' => __('Dự án đang triển khai', 'haritics'),
             'badge' => __('Đang triển khai', 'haritics'),
-            'statuses' => ['Đang triển khai'],
+            'statuses' => haritics_project_status_meta_values_for_group('implementing'),
         ],
         [
             'key' => 'upcoming',
             'title' => __('Dự án đang sắp triển khai', 'haritics'),
-            'badge' => __('Sắp triển khai', 'haritics'),
-            'statuses' => ['Đang sắp triển khai', 'Sắp triển khai'],
+            'badge' => __('Đang sắp triển khai', 'haritics'),
+            'statuses' => haritics_project_status_meta_values_for_group('upcoming'),
         ],
     ];
 }
@@ -476,19 +676,22 @@ function haritics_build_project_filter_meta_query(array $filters): array
             'fields' => 'ids',
         ]);
 
-        $meta_query[] = [
+        $organizer_clause = [
             'relation' => 'OR',
             [
                 'key' => '_leader_text',
                 'value' => $filters['organizer'],
                 'compare' => 'LIKE',
             ],
-            [
+        ];
+        if ($leader_posts !== []) {
+            $organizer_clause[] = [
                 'key' => '_leader_id',
                 'value' => $leader_posts,
                 'compare' => 'IN',
-            ],
-        ];
+            ];
+        }
+        $meta_query[] = $organizer_clause;
     }
 
     // donor filter - search in donor_text OR in donor_id (post title)
@@ -501,19 +704,22 @@ function haritics_build_project_filter_meta_query(array $filters): array
             'fields' => 'ids',
         ]);
 
-        $meta_query[] = [
+        $donor_clause = [
             'relation' => 'OR',
             [
                 'key' => '_donor_text',
                 'value' => $filters['donor'],
                 'compare' => 'LIKE',
             ],
-            [
+        ];
+        if ($donor_posts !== []) {
+            $donor_clause[] = [
                 'key' => '_donor_id',
                 'value' => $donor_posts,
                 'compare' => 'IN',
-            ],
-        ];
+            ];
+        }
+        $meta_query[] = $donor_clause;
     }
 
     if (! empty($filters['location'])) {
@@ -573,15 +779,14 @@ function haritics_apply_advanced_search(\WP_Query $query): void
     }
 
     $filters = haritics_get_search_filters();
-    $keyword = haritics_get_search_keyword();
 
     if ($archive_post_type !== '') {
         $query->set('post_type', $archive_post_type);
         $query->set('posts_per_page', $archive_post_type === 'project' ? -1 : 12);
 
         if ($archive_post_type === 'project' && $has_filters) {
-            if ($keyword !== '') {
-                $query->set('s', $keyword);
+            if ($filters['s'] !== '') {
+                $query->set('s', $filters['s']);
             }
 
             $meta_query = haritics_build_project_filter_meta_query($filters);
@@ -608,7 +813,6 @@ function haritics_apply_advanced_search(\WP_Query $query): void
     $has_organizer = $filters['organizer'] !== '';
     $has_donor = $filters['donor'] !== '';
     $has_location = $filters['location'] !== '';
-    $has_keyword = $keyword !== '';
 
     $post_types[] = 'project';
 
@@ -633,8 +837,8 @@ function haritics_apply_advanced_search(\WP_Query $query): void
 
     $query->set('posts_per_page', 12);
 
-    if ($keyword !== '') {
-        $query->set('s', $keyword);
+    if ($filters['s'] !== '') {
+        $query->set('s', $filters['s']);
     }
 
     $meta_queries = [];
@@ -649,17 +853,12 @@ function haritics_apply_advanced_search(\WP_Query $query): void
             'fields' => 'ids',
         ]);
 
-        $meta_queries[] = [
+        $organizer_block = [
             'relation' => 'OR',
             [
                 'key' => '_leader_text',
                 'value' => $filters['organizer'],
                 'compare' => 'LIKE',
-            ],
-            [
-                'key' => '_leader_id',
-                'value' => $leader_posts,
-                'compare' => 'IN',
             ],
             [
                 'key' => '_organizer',
@@ -672,6 +871,14 @@ function haritics_apply_advanced_search(\WP_Query $query): void
                 'compare' => 'LIKE',
             ],
         ];
+        if ($leader_posts !== []) {
+            $organizer_block[] = [
+                'key' => '_leader_id',
+                'value' => $leader_posts,
+                'compare' => 'IN',
+            ];
+        }
+        $meta_queries[] = $organizer_block;
     }
 
     // donor filter - search in donation posts OR project meta fields
@@ -684,7 +891,7 @@ function haritics_apply_advanced_search(\WP_Query $query): void
             'fields' => 'ids',
         ]);
 
-        $meta_queries[] = [
+        $donor_block = [
             'relation' => 'OR',
             [
                 'key' => '_donor_text',
@@ -692,16 +899,19 @@ function haritics_apply_advanced_search(\WP_Query $query): void
                 'compare' => 'LIKE',
             ],
             [
-                'key' => '_donor_id',
-                'value' => $donor_posts,
-                'compare' => 'IN',
-            ],
-            [
                 'key' => '_badge',
                 'value' => $filters['donor'],
                 'compare' => 'LIKE',
             ],
         ];
+        if ($donor_posts !== []) {
+            $donor_block[] = [
+                'key' => '_donor_id',
+                'value' => $donor_posts,
+                'compare' => 'IN',
+            ];
+        }
+        $meta_queries[] = $donor_block;
     }
 
     if ($filters['location'] !== '') {

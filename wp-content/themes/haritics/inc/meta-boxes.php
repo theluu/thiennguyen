@@ -36,7 +36,7 @@ function haritics_meta_fields(): array
             '_start_date' => ['label' => 'Ngày bắt đầu', 'type' => 'date'],
             '_end_date' => ['label' => 'Ngày kết thúc', 'type' => 'date'],
             '_status' => ['label' => 'Trạng thái', 'type' => 'select', 'options' => [
-                'Dang-huy-dong' => 'Đang huy động',
+                'Dang-huy-dong' => 'Đang kêu gọi nguồn lực',
                 'Tieu-bieu' => 'Tiêu biểu',
                 'Dang-trien-khai' => 'Đang triển khai',
                 'Dang-sap-trien-khai' => 'Đang sắp triển khai',
@@ -107,6 +107,23 @@ function haritics_meta_fields(): array
             '_organizer' => ['label' => 'Đơn vị tổ chức', 'type' => 'text'],
             '_register_url' => ['label' => 'Link đăng ký', 'type' => 'url'],
             '_gallery_urls' => ['label' => 'Gallery URLs (mỗi dòng một ảnh)', 'type' => 'textarea'],
+        ],
+        'haritics_apply' => [
+            '_project_id' => ['label' => 'ID dự án', 'type' => 'number'],
+            '_apply_role' => ['label' => 'Vị trí ứng tuyển', 'type' => 'select', 'options' => [
+                'leader' => 'Lãnh đạo dự án',
+                'volunteer' => 'Nhân sự / tình nguyện',
+            ]],
+            '_applicant_name' => ['label' => 'Họ tên', 'type' => 'text'],
+            '_applicant_email' => ['label' => 'Email', 'type' => 'email'],
+            '_applicant_phone' => ['label' => 'Điện thoại', 'type' => 'text'],
+        ],
+        'haritics_contribute' => [
+            '_project_id' => ['label' => 'ID dự án', 'type' => 'number'],
+            '_applicant_name' => ['label' => 'Họ tên', 'type' => 'text'],
+            '_applicant_email' => ['label' => 'Email', 'type' => 'email'],
+            '_applicant_phone' => ['label' => 'Điện thoại', 'type' => 'text'],
+            '_contribution_note' => ['label' => 'Nội dung / hình thức muốn đóng góp', 'type' => 'textarea'],
         ],
     ];
 }
