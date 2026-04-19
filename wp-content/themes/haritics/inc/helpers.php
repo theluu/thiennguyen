@@ -158,33 +158,57 @@ function haritics_get_meta(int $post_id, string $key, string $default = ''): str
     return $default;
 }
 
-function haritics_get_project_leader(int $project_id, string $default = ''): string
+function haritics_get_project_leaders(int $project_id): array
 {
-    // First try to get leader by ID (new field)
-    $leader_id = haritics_get_meta($project_id, '_leader_id');
-    if ($leader_id !== '') {
-        $leader_post = get_post((int) $leader_id);
-        if ($leader_post && $leader_post->post_status === 'publish') {
-            return $leader_post->post_title;
+    $ids = get_post_meta($project_id, '_leader_ids', true);
+    if (!is_array($ids) || $ids === []) {
+        // backward compat: single _leader_id
+        $single = haritics_get_meta($project_id, '_leader_id');
+        $ids = $single !== '' ? [(int) $single] : [];
+    }
+    $result = [];
+    foreach ($ids as $id) {
+        $post = get_post((int) $id);
+        if ($post && $post->post_status === 'publish') {
+            $result[] = $post;
         }
     }
+    return $result;
+}
 
-    // Fallback to old text field
+function haritics_get_project_leader(int $project_id, string $default = ''): string
+{
+    $leaders = haritics_get_project_leaders($project_id);
+    if ($leaders !== []) {
+        return $leaders[0]->post_title;
+    }
     return haritics_get_meta($project_id, '_leader_text', $default);
+}
+
+function haritics_get_project_donors(int $project_id): array
+{
+    $ids = get_post_meta($project_id, '_donor_ids', true);
+    if (!is_array($ids) || $ids === []) {
+        // backward compat: single _donor_id
+        $single = haritics_get_meta($project_id, '_donor_id');
+        $ids = $single !== '' ? [(int) $single] : [];
+    }
+    $result = [];
+    foreach ($ids as $id) {
+        $post = get_post((int) $id);
+        if ($post && $post->post_status === 'publish') {
+            $result[] = $post;
+        }
+    }
+    return $result;
 }
 
 function haritics_get_project_donor(int $project_id, string $default = ''): string
 {
-    // First try to get donor by ID (new field)
-    $donor_id = haritics_get_meta($project_id, '_donor_id');
-    if ($donor_id !== '') {
-        $donor_post = get_post((int) $donor_id);
-        if ($donor_post && $donor_post->post_status === 'publish') {
-            return $donor_post->post_title;
-        }
+    $donors = haritics_get_project_donors($project_id);
+    if ($donors !== []) {
+        return $donors[0]->post_title;
     }
-
-    // Fallback to old text field
     return haritics_get_meta($project_id, '_donor_text', $default);
 }
 
@@ -200,14 +224,8 @@ function haritics_render_project_card(\WP_Post $project, string $type): void
     
     // Metadata
     $leader_text = haritics_get_project_leader($project->ID, '');
-    $leader_condition = haritics_get_meta($project->ID, '_leader_condition', '#');
-    $volunteer_needed = haritics_get_meta($project->ID, '_volunteer_needed', '');
-    $volunteer_condition = haritics_get_meta($project->ID, '_volunteer_condition', '#');
     $resources_other = haritics_get_meta($project->ID, '_resources_other', '');
-    $resources_detail = haritics_get_meta($project->ID, '_resources_detail', '#');
     $donor_text = haritics_get_project_donor($project->ID, '');
-    $donor_list_url = haritics_get_meta($project->ID, '_donor_list_url', '#');
-    $leader_list_url = haritics_get_meta($project->ID, '_leader_list_url', '#');
 
     ?>
     <article class="ul-project-card">
@@ -252,8 +270,8 @@ function haritics_render_project_card(\WP_Post $project, string $type): void
                 <div class="ul-project-meta">
                     <span class="ul-meta-label"><?php esc_html_e('Lãnh đạo dự án:', 'haritics'); ?></span>
                     <div class="ul-meta-buttons-grid">
-                        <a href="#popup-leader-cond" 
-                        data-apply-url="<?php echo esc_url($apply_leader_url); ?>" 
+                        <a href="#popup-leader-cond"
+                        data-apply-url="<?php echo esc_url($apply_leader_url); ?>"
                         class="ul-btn-condition-outline open-popup-link">
                         <?php esc_html_e('Xem điều kiện', 'haritics'); ?>
                         </a>
@@ -264,8 +282,8 @@ function haritics_render_project_card(\WP_Post $project, string $type): void
                 <div class="ul-project-meta">
                     <span class="ul-meta-label"><?php esc_html_e('Nhân sự cần huy động:', 'haritics'); ?></span>
                     <div class="ul-meta-buttons-grid">
-                        <a href="#popup-staff-cond" 
-                        data-apply-url="<?php echo esc_url($apply_volunteer_url); ?>" 
+                        <a href="#popup-staff-cond"
+                        data-apply-url="<?php echo esc_url($apply_volunteer_url); ?>"
                         class="ul-btn-condition-outline open-popup-link">
                         <?php esc_html_e('Xem điều kiện', 'haritics'); ?>
                         </a>
@@ -293,11 +311,6 @@ function haritics_render_project_card(\WP_Post $project, string $type): void
                     <div class="ul-project-meta">
                         <span class="ul-meta-label"><?php esc_html_e('Lãnh đạo dự án:', 'haritics'); ?></span>
                         <span class="ul-meta-value"><?php echo esc_html($leader_text); ?></span>
-                        <?php if ($leader_list_url !== '' && $leader_list_url !== '#') : ?>
-                            <div class="ul-meta-buttons">
-                                <a href="<?php echo esc_url($leader_list_url); ?>" class="ul-btn-condition"><?php esc_html_e('Xem danh sách', 'haritics'); ?></a>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
 
@@ -305,11 +318,6 @@ function haritics_render_project_card(\WP_Post $project, string $type): void
                     <div class="ul-project-meta">
                         <span class="ul-meta-label"><?php esc_html_e('Nhà hảo tâm:', 'haritics'); ?></span>
                         <span class="ul-meta-value"><?php echo esc_html($donor_text); ?></span>
-                        <?php if ($donor_list_url !== '' && $donor_list_url !== '#') : ?>
-                            <div class="ul-meta-buttons">
-                                <a href="<?php echo esc_url($donor_list_url); ?>" class="ul-btn-condition"><?php esc_html_e('Xem danh sách', 'haritics'); ?></a>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>

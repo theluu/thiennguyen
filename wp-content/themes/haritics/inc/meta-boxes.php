@@ -41,19 +41,9 @@ function haritics_meta_fields(): array
                 'Dang-trien-khai' => 'Đang triển khai',
                 'Dang-sap-trien-khai' => 'Đang sắp triển khai',
             ]],
-            '_leader_id' => ['label' => 'Lãnh đạo dự án', 'type' => 'post_select', 'post_type' => 'team'],
-            '_leader_condition' => ['label' => 'Link xem điều kiện lãnh đạo', 'type' => 'url'],
-            '_leader_apply' => ['label' => 'Link ứng tuyển lãnh đạo', 'type' => 'url'],
-            '_volunteer_needed' => ['label' => 'Nhân sự cần huy động', 'type' => 'text'],
-            '_volunteer_condition' => ['label' => 'Link xem điều kiện tình nguyện', 'type' => 'url'],
-            '_volunteer_apply' => ['label' => 'Link ứng tuyển tình nguyện', 'type' => 'url'],
+            '_leader_ids' => ['label' => 'Lãnh đạo dự án', 'type' => 'multi_post_select', 'post_type' => 'team'],
+            '_donor_ids' => ['label' => 'Nhà hảo tâm', 'type' => 'multi_post_select', 'post_type' => 'donation'],
             '_resources_other' => ['label' => 'Các nguồn lực khác', 'type' => 'textarea'],
-            '_resources_detail' => ['label' => 'Link xem chi tiết nguồn lực', 'type' => 'url'],
-            '_resources_donate' => ['label' => 'Link muốn đóng góp', 'type' => 'url'],
-            '_donor_id' => ['label' => 'Nhà hảo tâm', 'type' => 'post_select', 'post_type' => 'donation'],
-            '_leader_list_url' => ['label' => 'Link xem danh sách lãnh đạo', 'type' => 'url'],
-            '_donor_list_url' => ['label' => 'Link xem danh sách nhà hảo tâm', 'type' => 'url'],
-            '_accounting_public_url' => ['label' => 'Link bài viết quyết toán công khai', 'type' => 'url'],
             '_related_issues' => ['label' => 'Các vấn đề liên quan khác', 'type' => 'textarea'],
 
             // ✅ UPDATED
@@ -209,6 +199,21 @@ function haritics_render_meta_box(\WP_Post $post, array $meta_box): void
             }
             echo '</select>';
 
+        } elseif ($field['type'] === 'multi_post_select') {
+
+            $posts = get_posts(['post_type' => $field['post_type'], 'numberposts' => -1, 'post_status' => 'publish']);
+            $selected_ids = is_array($value) ? array_map('intval', $value) : [];
+
+            echo '<div style="display:flex;flex-wrap:wrap;gap:8px 16px;">';
+            foreach ($posts as $p) {
+                $checked = in_array($p->ID, $selected_ids, true) ? 'checked' : '';
+                echo '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;">';
+                echo '<input type="checkbox" name="' . esc_attr($key) . '[]" value="' . esc_attr($p->ID) . '" ' . $checked . '>';
+                echo esc_html($p->post_title);
+                echo '</label>';
+            }
+            echo '</div>';
+
         } else {
 
             echo '<input type="' . esc_attr($field['type']) . '" name="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="regular-text">';
@@ -239,6 +244,12 @@ function haritics_save_meta_boxes(int $post_id): void
             } else {
                 delete_post_meta($post_id, $key);
             }
+            continue;
+        }
+
+        if ($field['type'] === 'multi_post_select') {
+            $ids = (!empty($_POST[$key]) && is_array($_POST[$key])) ? array_map('intval', $_POST[$key]) : [];
+            update_post_meta($post_id, $key, $ids);
             continue;
         }
 

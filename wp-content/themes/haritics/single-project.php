@@ -17,23 +17,17 @@ while (have_posts()) : the_post();
     $target_amount = haritics_get_meta($current_post_id, '_target_amount');
     $raised_amount = haritics_get_meta($current_post_id, '_raised_amount');
     $progress = haritics_progress_percent($raised_amount, $target_amount);
-    $leader_text = haritics_get_project_leader($current_post_id);
-    $leader_list_url = haritics_get_meta($current_post_id, '_leader_list_url');
-    $donor_text = haritics_get_project_donor($current_post_id);
-    $donor_list_url = haritics_get_meta($current_post_id, '_donor_list_url');
+    $leaders = haritics_get_project_leaders($current_post_id);
+    $leader_text = $leaders !== [] ? $leaders[0]->post_title : haritics_get_meta($current_post_id, '_leader_text');
+    $donors = haritics_get_project_donors($current_post_id);
+    $donor_text = $donors !== [] ? $donors[0]->post_title : haritics_get_meta($current_post_id, '_donor_text');
     $location = haritics_get_meta($current_post_id, '_location');
-    $accounting_public_url = haritics_get_meta($current_post_id, '_accounting_public_url');
     $related_issues = haritics_get_meta($current_post_id, '_related_issues');
+    $resources_other = haritics_get_meta($current_post_id, '_resources_other');
     $status_raw = haritics_get_meta($current_post_id, '_status', '');
     $status = $status_raw !== ''
         ? haritics_get_project_status_label($status_raw)
         : __('Đang cập nhật', 'haritics');
-
-    $leader_condition = haritics_get_meta($current_post_id, '_leader_condition');
-    $volunteer_needed = haritics_get_meta($current_post_id, '_volunteer_needed');
-    $volunteer_condition = haritics_get_meta($current_post_id, '_volunteer_condition');
-    $resources_other = haritics_get_meta($current_post_id, '_resources_other');
-    $resources_detail = haritics_get_meta($current_post_id, '_resources_detail');
     $is_calling_project = haritics_get_project_card_type_for_post($current_post_id) === 'calling';
     $haritics_req = sanitize_key((string) ($_GET['haritics_req'] ?? ''));
 
@@ -69,20 +63,16 @@ while (have_posts()) : the_post();
         [
             'id' => 'lanh-dao',
             'title' => __('Lãnh đạo', 'haritics'),
-            'content' => '<p>' . esc_html($leader_text !== '' ? $leader_text : __('Chưa cập nhật', 'haritics')) . '</p>',
-            'actions' => $leader_list_url !== '' ? [[
-                'label' => __('Xem danh sách', 'haritics'),
-                'url' => $leader_list_url,
-            ]] : [],
+            'content' => $leaders !== []
+                ? '<ul>' . implode('', array_map(fn($p) => '<li>' . esc_html($p->post_title) . '</li>', $leaders)) . '</ul>'
+                : '<p>' . esc_html__('Chưa cập nhật', 'haritics') . '</p>',
         ],
         [
             'id' => 'nha-hao-tam',
             'title' => __('Nhà hảo tâm', 'haritics'),
-            'content' => '<p>' . esc_html($donor_text !== '' ? $donor_text : __('Chưa cập nhật', 'haritics')) . '</p>',
-            'actions' => $donor_list_url !== '' ? [[
-                'label' => __('Xem danh sách', 'haritics'),
-                'url' => $donor_list_url,
-            ]] : [],
+            'content' => $donors !== []
+                ? '<ul>' . implode('', array_map(fn($p) => '<li>' . esc_html($p->post_title) . '</li>', $donors)) . '</ul>'
+                : '<p>' . esc_html__('Chưa cập nhật', 'haritics') . '</p>',
         ],
         [
             'id' => 'tien-do-hoan-thanh',
@@ -94,15 +84,6 @@ while (have_posts()) : the_post();
             'id' => 'dia-diem',
             'title' => __('Địa điểm', 'haritics'),
             'content' => '<p>' . esc_html($location !== '' ? $location : __('Chưa cập nhật', 'haritics')) . '</p>',
-        ],
-        [
-            'id' => 'quyet-toan-ke-toan',
-            'title' => __('Quyết toán kế toán công khai', 'haritics'),
-            'content' => '<p>' . esc_html($accounting_public_url !== '' ? __('Xem bài viết tổng hợp hình ảnh chứng từ, mua bán và ký kết.', 'haritics') : __('Chưa cập nhật', 'haritics')) . '</p>',
-            'actions' => $accounting_public_url !== '' ? [[
-                'label' => __('Xem bài viết', 'haritics'),
-                'url' => $accounting_public_url,
-            ]] : [],
         ],
         [
             'id' => 'van-de-lien-quan',
@@ -183,21 +164,12 @@ while (have_posts()) : the_post();
 
                                 <div class="haritics-calling-summary mb-4">
                                     <p><strong><?php esc_html_e('Số vốn cần huy động:', 'haritics'); ?></strong> <?php echo esc_html($target_amount !== '' ? haritics_format_money($target_amount) : __('Chưa cập nhật', 'haritics')); ?></p>
-                                    <p><strong><?php esc_html_e('Lãnh đạo dự án:', 'haritics'); ?></strong> <?php echo esc_html($leader_text !== '' ? $leader_text : '—'); ?>
-                                        <?php if ($leader_condition !== '' && filter_var($leader_condition, FILTER_VALIDATE_URL)) : ?>
-                                            <a class="ul-btn-condition ms-2" href="<?php echo esc_url($leader_condition); ?>"><?php esc_html_e('Xem điều kiện', 'haritics'); ?></a>
-                                        <?php endif; ?>
-                                    </p>
-                                    <p><strong><?php esc_html_e('Nhân sự cần huy động:', 'haritics'); ?></strong> <?php echo esc_html($volunteer_needed !== '' ? $volunteer_needed : '—'); ?>
-                                        <?php if ($volunteer_condition !== '' && filter_var($volunteer_condition, FILTER_VALIDATE_URL)) : ?>
-                                            <a class="ul-btn-condition ms-2" href="<?php echo esc_url($volunteer_condition); ?>"><?php esc_html_e('Xem điều kiện', 'haritics'); ?></a>
-                                        <?php endif; ?>
-                                    </p>
-                                    <p><strong><?php esc_html_e('Các nguồn lực khác:', 'haritics'); ?></strong> <?php echo esc_html($resources_other !== '' ? wp_strip_all_tags($resources_other) : '—'); ?>
-                                        <?php if ($resources_detail !== '' && filter_var($resources_detail, FILTER_VALIDATE_URL)) : ?>
-                                            <a class="ul-btn-condition ms-2" href="<?php echo esc_url($resources_detail); ?>"><?php esc_html_e('Xem chi tiết', 'haritics'); ?></a>
-                                        <?php endif; ?>
-                                    </p>
+                                    <?php if ($leaders !== []) : ?>
+                                    <p><strong><?php esc_html_e('Lãnh đạo dự án:', 'haritics'); ?></strong> <?php echo esc_html(implode(', ', array_map(fn($p) => $p->post_title, $leaders))); ?></p>
+                                    <?php endif; ?>
+                                    <?php if ($resources_other !== '') : ?>
+                                    <p><strong><?php esc_html_e('Các nguồn lực khác:', 'haritics'); ?></strong> <?php echo esc_html(wp_strip_all_tags($resources_other)); ?></p>
+                                    <?php endif; ?>
                                 </div>
 
                                 <div class="haritics-project-form-block mb-5" id="haritics-form-apply-leader">
