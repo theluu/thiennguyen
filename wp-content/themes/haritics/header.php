@@ -34,9 +34,7 @@ $search_filters = haritics_get_search_filters();
         <button class="ul-sidebar-closer"><i class="flaticon-close"></i></button>
     </div>
 
-    <div class="ul-sidebar-header-nav-wrapper d-block d-lg-none">
-        <?php haritics_render_primary_menu(); ?>
-    </div>
+    <div class="ul-sidebar-header-nav-wrapper d-block d-lg-none"></div>
 
     <div class="ul-sidebar-footer">
         <span class="ul-sidebar-footer-title"><?php esc_html_e('Kết nối cùng chúng tôi', 'haritics'); ?></span>
