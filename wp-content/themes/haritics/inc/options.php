@@ -27,18 +27,18 @@ function haritics_option_schema(): array
         'social_instagram' => 'url',
         'social_youtube' => 'url',
         'social_linkedin' => 'url',
-        'home_hero_badge' => 'text',
-        'home_hero_title' => 'text',
-        'home_hero_description' => 'textarea',
-        'home_hero_image' => 'url',
+        // 'home_hero_badge' => 'text',
+        // 'home_hero_title' => 'text',
+        // 'home_hero_description' => 'textarea',
+        // 'home_hero_image' => 'url',
         'home_primary_cta_text' => 'text',
         'home_primary_cta_url' => 'url',
         'home_stat_number' => 'text',
         'home_stat_label' => 'text',
-        'home_about_badge' => 'text',
-        'home_about_title' => 'text',
-        'home_about_description' => 'textarea',
-        'home_about_image' => 'url',
+        // 'home_about_badge' => 'text',
+        // 'home_about_title' => 'text',
+        // 'home_about_description' => 'textarea',
+        // 'home_about_image' => 'url',
         'home_projects_heading' => 'text',
         'home_donations_heading' => 'text',
         'home_team_heading' => 'text',
@@ -160,18 +160,18 @@ function haritics_render_theme_options_page(): void
             <h2><?php esc_html_e('Home Page', 'haritics'); ?></h2>
             <table class="form-table" role="presentation">
                 <?php
-                haritics_render_option_field('home_hero_badge', 'Hero Badge');
-                haritics_render_option_field('home_hero_title', 'Hero Title');
-                haritics_render_option_field('home_hero_description', 'Hero Description', 'textarea');
-                haritics_render_option_field('home_hero_image', 'Hero Image URL', 'url');
+                // haritics_render_option_field('home_hero_badge', 'Hero Badge');
+                // haritics_render_option_field('home_hero_title', 'Hero Title');
+                // haritics_render_option_field('home_hero_description', 'Hero Description', 'textarea');
+                // haritics_render_option_field('home_hero_image', 'Hero Image URL', 'url');
                 haritics_render_option_field('home_primary_cta_text', 'Primary CTA Text');
                 haritics_render_option_field('home_primary_cta_url', 'Primary CTA URL', 'url');
                 haritics_render_option_field('home_stat_number', 'Hero Stat Number');
                 haritics_render_option_field('home_stat_label', 'Hero Stat Label');
-                haritics_render_option_field('home_about_badge', 'About Badge');
-                haritics_render_option_field('home_about_title', 'About Title');
-                haritics_render_option_field('home_about_description', 'About Description', 'textarea');
-                haritics_render_option_field('home_about_image', 'About Image URL', 'url');
+                // haritics_render_option_field('home_about_badge', 'About Badge');
+                // haritics_render_option_field('home_about_title', 'About Title');
+                // haritics_render_option_field('home_about_description', 'About Description', 'textarea');
+                // haritics_render_option_field('home_about_image', 'About Image URL', 'url');
                 haritics_render_option_field('home_projects_heading', 'Projects Section Heading');
                 haritics_render_option_field('home_donations_heading', 'Donations Section Heading');
                 haritics_render_option_field('home_team_heading', 'Team Section Heading');
