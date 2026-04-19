@@ -324,14 +324,13 @@ function haritics_render_project_card(\WP_Post $project, string $type): void
 
 function haritics_get_gallery_urls(int $post_id, string $meta_key): array
 {
-    $raw = trim(haritics_get_meta($post_id, $meta_key));
-    if ($raw === '') {
-        return [];
-    }
+    $ids = get_post_meta($post_id, $meta_key, true);
 
-    $parts = array_filter(array_map('trim', explode("\n", str_replace(["\r\n", "\r"], "\n", $raw))));
+    if (!is_array($ids)) return [];
 
-    return array_values(array_filter($parts, static fn ($url) => (bool) filter_var($url, FILTER_VALIDATE_URL)));
+    return array_map(function ($id) {
+        return wp_get_attachment_url($id);
+    }, $ids);
 }
 
 function haritics_social_icon_class(string $network): string

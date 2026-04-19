@@ -55,7 +55,9 @@ function haritics_meta_fields(): array
             '_donor_list_url' => ['label' => 'Link xem danh sách nhà hảo tâm', 'type' => 'url'],
             '_accounting_public_url' => ['label' => 'Link bài viết quyết toán công khai', 'type' => 'url'],
             '_related_issues' => ['label' => 'Các vấn đề liên quan khác', 'type' => 'textarea'],
-            '_gallery_urls' => ['label' => 'Gallery URLs (mỗi dòng một ảnh)', 'type' => 'textarea'],
+
+            // ✅ UPDATED
+            '_gallery_urls' => ['label' => 'Gallery Images', 'type' => 'multi_image'],
         ],
         'donation' => [
             '_donor_type' => ['label' => 'Loại mạnh thường quân', 'type' => 'select', 'options' => [
@@ -98,7 +100,9 @@ function haritics_meta_fields(): array
                 '0' => 'Không',
                 '1' => 'Có',
             ]],
-            '_gallery_urls' => ['label' => 'Gallery URLs (mỗi dòng một ảnh)', 'type' => 'textarea'],
+
+            // ✅ UPDATED
+            '_gallery_urls' => ['label' => 'Gallery Images', 'type' => 'multi_image'],
         ],
         'event' => [
             '_venue' => ['label' => 'Địa điểm tổ chức', 'type' => 'text'],
@@ -106,7 +110,9 @@ function haritics_meta_fields(): array
             '_event_end_date' => ['label' => 'Ngày kết thúc', 'type' => 'date'],
             '_organizer' => ['label' => 'Đơn vị tổ chức', 'type' => 'text'],
             '_register_url' => ['label' => 'Link đăng ký', 'type' => 'url'],
-            '_gallery_urls' => ['label' => 'Gallery URLs (mỗi dòng một ảnh)', 'type' => 'textarea'],
+
+            // ✅ UPDATED
+            '_gallery_urls' => ['label' => 'Gallery Images', 'type' => 'multi_image'],
         ],
         'haritics_apply' => [
             '_project_id' => ['label' => 'ID dự án', 'type' => 'number'],
@@ -128,6 +134,9 @@ function haritics_meta_fields(): array
     ];
 }
 
+/**
+ * REGISTER META BOXES
+ */
 function haritics_register_meta_boxes(): void
 {
     foreach (haritics_meta_fields() as $post_type => $fields) {
@@ -144,101 +153,139 @@ function haritics_register_meta_boxes(): void
 }
 add_action('add_meta_boxes', 'haritics_register_meta_boxes');
 
+/**
+ * RENDER
+ */
 function haritics_render_meta_box(\WP_Post $post, array $meta_box): void
 {
     $fields = $meta_box['args']['fields'] ?? [];
     wp_nonce_field('haritics_save_meta', 'haritics_meta_nonce');
 
-    echo '<table class="form-table" role="presentation">';
+    echo '<table class="form-table">';
+
     foreach ($fields as $key => $field) {
         $value = get_post_meta($post->ID, $key, true);
+
         echo '<tr>';
-        echo '<th scope="row"><label for="' . esc_attr($key) . '">' . esc_html($field['label']) . '</label></th>';
+        echo '<th><label>' . esc_html($field['label']) . '</label></th>';
         echo '<td>';
 
         if ($field['type'] === 'textarea') {
-            echo '<textarea class="large-text" rows="4" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '">' . esc_textarea((string) $value) . '</textarea>';
+
+            echo '<textarea name="' . esc_attr($key) . '" class="large-text">' . esc_textarea($value) . '</textarea>';
+
+        } elseif ($field['type'] === 'multi_image') {
+
+            $ids = is_array($value) ? $value : [];
+
+            echo '<div class="haritics-images" style="display:flex;gap:10px;flex-wrap:wrap;">';
+
+            foreach ($ids as $id) {
+                echo '<div style="position:relative;">';
+                echo wp_get_attachment_image($id, 'thumbnail');
+                echo '<input type="hidden" name="' . esc_attr($key) . '[]" value="' . esc_attr($id) . '">';
+                echo '<button type="button" class="remove-image" style="position:absolute;top:0;right:0;">×</button>';
+                echo '</div>';
+            }
+
+            echo '</div>';
+            echo '<button class="button add-images" data-key="' . esc_attr($key) . '">Chọn ảnh</button>';
+
         } elseif ($field['type'] === 'select') {
-            $options = $field['options'] ?? [];
-            echo '<select class="regular-text" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '">';
-            echo '<option value="">' . esc_html__('Chọn', 'haritics') . '</option>';
-            foreach ($options as $option_value => $option_label) {
-                echo '<option value="' . esc_attr((string) $option_value) . '"' . selected((string) $value, (string) $option_value, false) . '>' . esc_html((string) $option_label) . '</option>';
+
+            echo '<select name="' . esc_attr($key) . '">';
+            foreach ($field['options'] as $k => $label) {
+                echo '<option value="' . esc_attr($k) . '" ' . selected($value, $k, false) . '>' . esc_html($label) . '</option>';
             }
             echo '</select>';
+
         } elseif ($field['type'] === 'post_select') {
-            $post_type = $field['post_type'] ?? 'post';
-            $posts = get_posts([
-                'post_type' => $post_type,
-                'post_status' => 'publish',
-                'posts_per_page' => -1,
-                'orderby' => 'title',
-                'order' => 'ASC',
-            ]);
-            echo '<select class="regular-text" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '">';
-            echo '<option value="">' . esc_html__('Chọn', 'haritics') . '</option>';
-            foreach ($posts as $post_item) {
-                echo '<option value="' . esc_attr((string) $post_item->ID) . '"' . selected($value, (string) $post_item->ID, false) . '>' . esc_html($post_item->post_title) . '</option>';
+
+            $posts = get_posts(['post_type' => $field['post_type'], 'numberposts' => -1]);
+
+            echo '<select name="' . esc_attr($key) . '">';
+            foreach ($posts as $p) {
+                echo '<option value="' . $p->ID . '" ' . selected($value, $p->ID, false) . '>' . esc_html($p->post_title) . '</option>';
             }
             echo '</select>';
+
         } else {
-            echo '<input class="regular-text" type="' . esc_attr($field['type']) . '" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '" value="' . esc_attr((string) $value) . '">';
+
+            echo '<input type="' . esc_attr($field['type']) . '" name="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="regular-text">';
+
         }
 
-        echo '</td>';
-        echo '</tr>';
+        echo '</td></tr>';
     }
+
     echo '</table>';
 }
 
+/**
+ * SAVE
+ */
 function haritics_save_meta_boxes(int $post_id): void
 {
-    if (! isset($_POST['haritics_meta_nonce']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['haritics_meta_nonce'])), 'haritics_save_meta')) {
-        return;
-    }
+    if (!isset($_POST['haritics_meta_nonce'])) return;
+    if (!wp_verify_nonce($_POST['haritics_meta_nonce'], 'haritics_save_meta')) return;
 
-    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-        return;
-    }
+    $fields = haritics_meta_fields()[get_post_type($post_id)] ?? [];
 
-    $post_type = get_post_type($post_id);
-    $definitions = haritics_meta_fields()[$post_type] ?? [];
+    foreach ($fields as $key => $field) {
 
-    if ($definitions === [] || ! current_user_can('edit_post', $post_id)) {
-        return;
-    }
-
-    foreach ($definitions as $key => $field) {
-        $raw = $_POST[$key] ?? '';
-        $value = is_string($raw) ? wp_unslash($raw) : '';
-
-        switch ($field['type']) {
-            case 'email':
-                $sanitized = sanitize_email($value);
-                break;
-            case 'url':
-                $sanitized = esc_url_raw($value);
-                break;
-            case 'number':
-                $sanitized = $value === '' ? '' : (string) (float) $value;
-                break;
-            case 'textarea':
-                $sanitized = wp_kses_post($value);
-                break;
-            case 'select':
-            case 'post_select':
-                $sanitized = sanitize_text_field($value);
-                break;
-            default:
-                $sanitized = sanitize_text_field($value);
-                break;
+        if ($field['type'] === 'multi_image') {
+            if (!empty($_POST[$key]) && is_array($_POST[$key])) {
+                update_post_meta($post_id, $key, array_map('intval', $_POST[$key]));
+            } else {
+                delete_post_meta($post_id, $key);
+            }
+            continue;
         }
 
-        if ($sanitized === '') {
-            delete_post_meta($post_id, $key);
-        } else {
-            update_post_meta($post_id, $key, $sanitized);
-        }
+        $value = $_POST[$key] ?? '';
+        update_post_meta($post_id, $key, sanitize_text_field($value));
     }
 }
 add_action('save_post', 'haritics_save_meta_boxes');
+
+/**
+ * MEDIA JS
+ */
+add_action('admin_footer', function () {
+?>
+<script>
+jQuery(function($){
+    let frame;
+
+    $(document).on('click', '.add-images', function(e){
+        e.preventDefault();
+
+        const btn = $(this);
+        const container = btn.prev('.haritics-images');
+
+        frame = wp.media({ multiple:true });
+
+        frame.on('select', function(){
+            const files = frame.state().get('selection').toJSON();
+
+            files.forEach(function(f){
+                container.append(
+                    '<div style="position:relative;">' +
+                    '<img src="'+f.sizes.thumbnail.url+'">' +
+                    '<input type="hidden" name="'+btn.data('key')+'[]" value="'+f.id+'">' +
+                    '<button type="button" class="remove-image" style="position:absolute;top:0;right:0;">×</button>' +
+                    '</div>'
+                );
+            });
+        });
+
+        frame.open();
+    });
+
+    $(document).on('click', '.remove-image', function(){
+        $(this).parent().remove();
+    });
+});
+</script>
+<?php
+});
